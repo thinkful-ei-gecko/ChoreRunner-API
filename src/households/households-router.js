@@ -13,8 +13,7 @@ householdsRouter
   const user_id = req.user.id;
 
   console.log(name, user_id)
-  const newName = name[0]
-
+ 
     if (!name)
        return res.status(400).json({
         error: `Missing name in request body`,
@@ -24,7 +23,7 @@ householdsRouter
     //use short id to generate house code
     // let house_code = `${name}` + shortid.generate();
     const newHousehold = {
-      name: newName,
+      name,
       user_id,
     };
 
