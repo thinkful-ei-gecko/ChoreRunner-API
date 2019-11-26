@@ -1,6 +1,8 @@
-# Express Boilerplate!
+# ChoreRunner API 1.0
 
-This is a boilerplate project used for starting new projects!
+Authors: Daniel Nichols, Hubert Yang, Nancy Phiukhao, Yulia Khisamutdinova, Alexander Fukui
+
+This project was created using Express.
 
 ## Set up
 
