@@ -13,11 +13,15 @@ const householdsRouter = require('./households/households-router');
 
 const app = express();
 
-const morganOption = NODE_ENV === 'production';
-
-app.use(morgan(morganOption));
+const { CLIENT_ORIGIN } = require('./config');
+const morganSetting = process.env.NODE_ENV === 'production' ? 'tiny' : 'common';
+app.use(morgan(morganSetting));
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_ORIGIN
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('Hallo, Textbaustein!');
