@@ -2,15 +2,18 @@ const express = require('express');
 const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth')
 const HouseholdsService = require('./households-service');
-const shortid = require('shortid');
+// const shortid = require('shortid');
 
 const householdsRouter = express.Router();
 const jsonBodyParser = express.json();
 
 householdsRouter
 .post('/', requireAuth, jsonBodyParser, async (req, res, next) => {
-  const { name} = req.body;
+  const { name } = req.body;
   const user_id = req.user.id;
+
+  console.log(name, user_id)
+  const newName = name[0]
 
     if (!name)
        return res.status(400).json({
@@ -21,7 +24,7 @@ householdsRouter
     //use short id to generate house code
     // let house_code = `${name}` + shortid.generate();
     const newHousehold = {
-      name,
+      name: newName,
       user_id,
     };
 
@@ -29,6 +32,7 @@ householdsRouter
       req.app.get('db'),
       newHousehold
     );
+
 
     res.status(201).json({
       owner_id: house.user_id,
