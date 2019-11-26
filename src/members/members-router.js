@@ -18,18 +18,18 @@ membersRouter
         })
 
     try {
-    //   const passwordError = UserService.validatePassword(password)
+      const passwordError = MembersService.validatePassword(password)
 
-    //   if (passwordError)
-    //     return res.status(400).json({ error: passwordError })
+      if (passwordError)
+        return res.status(400).json({ error: passwordError })
 
-    //   const hasUserWithUserName = await UserService.hasUserWithUserName(
-    //     req.app.get('db'),
-    //     username
-    //   )
+      const hasMemberwithMemberName = await MembersService.hasMemberwithMemberName(
+        req.app.get('db'),
+        username
+      )
 
-      // if (hasUserWithUserName)
-      //   return res.status(400).json({ error: `Username already taken` })
+      if (hasMemberwithMemberName)
+        return res.status(400).json({ error: `Username already taken` })
 
       const hashedPassword = await  MembersService.hashPassword(password)
 
@@ -45,8 +45,6 @@ membersRouter
         req.app.get('db'),
         newMember
       )
-
-
 
       res
         .status(201)
