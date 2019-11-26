@@ -42,10 +42,7 @@ userRouter
         newUser
       )
 
-      // await UserService.populateUserWords(
-      //   req.app.get('db'),
-      //   user.id
-      // )
+
 
       res
         .status(201)
