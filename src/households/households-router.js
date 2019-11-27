@@ -114,6 +114,55 @@ householdsRouter
       })
       .catch(next);
   })
+  .post(jsonBodyParser, async (req, res, next) => {
+    const { password, username, name, } = req.body
+    const user_id = req.user.id
+    const { householdId } = req.params;
+    console.log(password, username, name)
+
+    for (const field of ['name', 'username', 'password'])
+      if (!req.body[field])
+        return res.status(400).json({
+          error: `Missing '${field}' in request body`
+        })
+
+    try {
+      // const passwordError = MembersService.validatePassword(password)
+
+      // if (passwordError)
+      //   return res.status(400).json({ error: passwordError })
+
+      const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
+        req.app.get('db'),
+        username
+      )
+
+      if (hasMemberwithMemberName)
+        return res.status(400).json({ error: `Username already taken` })
+
+      const hashedPassword = await  HouseholdsService.hashPassword(password)
+
+      const newMember = {
+        username,
+        password: hashedPassword,
+        name,
+        household_id: householdId,
+        user_id,
+      }
+
+      const member = await HouseholdsService.insertMember(
+        req.app.get('db'),
+        newMember
+      )
+
+      res
+        .status(201)
+        .location(path.posix.join(req.originalUrl, `/${member.id}`))
+        .json(HouseholdsService.serializeMember(member))
+    } catch(error) {
+      next(error)
+    }
+  })
 
   //delete household? 
 
