@@ -9,9 +9,11 @@ const householdsRouter = express.Router();
 const jsonBodyParser = express.json();
 
 householdsRouter
-.post('/', requireAuth, jsonBodyParser, async (req, res, next) => {
-  const { name } = req.body;
-  const user_id = req.user.id;
+  .route('/')
+  .all(requireAuth)
+  .post(jsonBodyParser, async (req, res, next) => {
+    const { name } = req.body;
+    const user_id = req.user.id;
 
   console.log(name, user_id)
  
@@ -28,22 +30,34 @@ householdsRouter
       user_id,
     };
 
-    const house = await HouseholdsService.insertHousehold(
+      const house = await HouseholdsService.insertHousehold(
+        req.app.get('db'),
+        newHousehold
+      );
+
+
+      res.status(201).json({
+        owner_id: house.user_id,
+        id: house.id,
+        name: house.name,
+        // code: house.house_code,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })
+  .get((req, res, next) => {
+    const user_id = req.user.id;
+    console.log(user_id);
+    return HouseholdsService.getAllHouseholds(
       req.app.get('db'),
-      newHousehold
-    );
-
-
-    res.status(201).json({
-      owner_id: house.user_id,
-      id: house.id,
-      name: house.name,
-      // code: house.house_code,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+      user_id
+    )
+      .then(households => {
+        return res.json(households)
+      })
+      .catch(next);
+  })
 
 householdsRouter
   .route('/:householdId/tasks')
@@ -51,8 +65,6 @@ householdsRouter
   .post(jsonBodyParser, (req, res, next) => {
     let { user_id, title, member_id, points } = req.body;
     const { householdId } = req.params;
-
-    console.log(householdId);
 
     if (!title || !member_id || !points) {
       return res.status(400).json({error: {message: 'Missing task name, member id or points in request body'}});
@@ -77,6 +89,17 @@ householdsRouter
       .catch(next);
   })
 
+  .get((req, res, next) => {
+    const { householdId } = req.params;
+    return HouseholdsService.getAllTasks(
+      req.app.get('db'),
+      householdId
+    )
+      .then(tasks => {
+        return res.json(tasks)
+      })
+      .catch(next);
+  })
 
   //NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS. 
   //MIGHT WANT TO FIX THIS BEFORE DEPLOY
@@ -108,6 +131,71 @@ householdsRouter
       })
       .catch(next)
     })
+
+  householdsRouter
+  .route('/:householdId/members')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const { householdId } = req.params;
+  
+    return HouseholdsService.getAllMembers(
+      req.app.get('db'),
+      householdId
+    )
+      .then(tasks => {
+        return res.json(tasks)
+      })
+      .catch(next);
+  })
+  .post(jsonBodyParser, async (req, res, next) => {
+    const { password, username, name, } = req.body
+    const user_id = req.user.id
+    const { householdId } = req.params;
+    console.log(password, username, name)
+
+    for (const field of ['name', 'username', 'password'])
+      if (!req.body[field])
+        return res.status(400).json({
+          error: `Missing '${field}' in request body`
+        })
+
+    try {
+      // const passwordError = MembersService.validatePassword(password)
+
+      // if (passwordError)
+      //   return res.status(400).json({ error: passwordError })
+
+      const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
+        req.app.get('db'),
+        username
+      )
+
+      if (hasMemberwithMemberName)
+        return res.status(400).json({ error: `Username already taken` })
+
+      const hashedPassword = await  HouseholdsService.hashPassword(password)
+
+      const newMember = {
+        username,
+        password: hashedPassword,
+        name,
+        household_id: householdId,
+        user_id,
+      }
+
+      const member = await HouseholdsService.insertMember(
+        req.app.get('db'),
+        newMember
+      )
+
+      res
+        .status(201)
+        .location(path.posix.join(req.originalUrl, `/${member.id}`))
+        .json(HouseholdsService.serializeMember(member))
+    } catch(error) {
+      next(error)
+    }
+  })
 
   //delete household? 
 

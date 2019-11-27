@@ -6,7 +6,6 @@ const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const authRouter = require('./auth/auth-router');
 const userRouter = require('./user/user-router');
-const membersRouter = require('./members/members-router');
 const membersAuthRouter = require('./auth-members/members-auth');
 
 const householdsRouter = require('./households/households-router');
@@ -29,8 +28,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
-app.use('/api/households', householdsRouter);// /:household_id/tasks /:household_id/members 
-app.use('/api/members', membersRouter);
+app.use('/api/households', householdsRouter);
 app.use('/api/membersAuth', membersAuthRouter);
 
 app.use(function errorHandler(error, req, res, next) {
