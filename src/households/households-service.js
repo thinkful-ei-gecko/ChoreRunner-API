@@ -69,6 +69,16 @@ const HouseholdsService = {
     };
 
   },
+
+  //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
+  //SOMEHOW.
+  completeTask(db, member_id, household_id, taskId) {
+    return db('tasks')
+      .where('tasks.member_id', member_id)
+      .andWhere('tasks.household_id', household_id)
+      .andWhere('tasks.id', taskId)
+      .delete();
+  },
 };
 
 module.exports = HouseholdsService;
