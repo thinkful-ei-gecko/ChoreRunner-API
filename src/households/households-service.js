@@ -13,6 +13,24 @@ const HouseholdsService = {
       .into('tasks')
       .returning('*');
   },
+  getAllHouseholds(db, id) {
+    return db
+      .select('*')
+      .from('households')
+      .where('user_id', id);
+  },
+  getAllTasks(db, id) {
+    return db
+      .select('*')
+      .from('tasks')
+      .where('household_id', id);
+  },
+  getAllMembers(db, id) {
+    return db
+      .select('*')
+      .from('members')
+      .where('household_id', id);
+  },
 };
 
 module.exports = HouseholdsService;

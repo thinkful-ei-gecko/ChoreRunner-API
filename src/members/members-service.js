@@ -41,6 +41,7 @@ const MembersService = {
       username: member.username,
     };
   },
+ 
 };
 
 module.exports = MembersService;

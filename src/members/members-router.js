@@ -7,7 +7,9 @@ const membersRouter = express.Router();
 const jsonBodyParser = express.json();
 
 membersRouter
-  .post('/', requireAuth, jsonBodyParser, async (req, res, next) => {
+  .route('/')
+  .all(requireAuth)
+  .post(jsonBodyParser, async (req, res, next) => {
     const { password, username, name, household_id } = req.body
     const user_id = req.user.id
 
@@ -56,5 +58,6 @@ membersRouter
       next(error)
     }
   })
+ 
 
   module.exports = membersRouter;
