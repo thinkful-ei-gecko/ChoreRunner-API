@@ -75,7 +75,8 @@ householdsRouter
         res.status(201).json(result[0]);
       })
       .catch(next);
-  });
+  })
+
 
   //NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS. 
   //MIGHT WANT TO FIX THIS BEFORE DEPLOY
@@ -83,7 +84,7 @@ householdsRouter
     .route('/householdId/members/memberId/tasks')
     .all(requireMemberAuth)
     .get((req, res, next) => {
-      console.log(req.user)
+      console.log(req.member)
       HouseholdsService.getMemberTasks(
         req.app.get('db'),
         req.member.household_id,
@@ -91,6 +92,18 @@ householdsRouter
       )
       .then(result => {
         res.status(201).json(result)
+      })
+      .catch(next)
+    })
+    .delete(jsonBodyParser, (req, res, next) => {
+      const {taskId} =req.body
+      HouseholdsService.completeTask(
+        req.app.get('db'),
+        req.member.id,
+        req.member.household_id,
+        taskId
+      ).then(() => {
+        res.status(204).end()
       })
       .catch(next)
     })
