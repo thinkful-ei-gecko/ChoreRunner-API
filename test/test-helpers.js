@@ -33,6 +33,22 @@ function seedUsers(db, users) {
     )
 }
 
+function cleanTables(db) {
+  return db.transaction(trx =>
+    trx.raw(
+      `TRUNCATE
+        users
+      `
+    )
+      .then(() =>
+        Promise.all([
+          trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
+          trx.raw(`SELECT setval('users_id_seq', 0)`),
+        ])
+      )
+  )
+}
+
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   const token = jwt.sign({ user_id: user.id }, secret, {
     subject: user.username,
@@ -54,6 +70,7 @@ module.exports = {
   makeUser,
   makeUsersArray,
   seedUsers,
+  cleanTables,
   makeAuthHeader,
   makeFixtures
 }

@@ -9,7 +9,7 @@ describe('Protected endpoints', function() {
     testUsers,
     testArticles,
     testComments,
-  } = helpers.makeArticlesFixtures()
+  } = helpers.makeFixtures()
 
   before('make knex instance', () => {
     db = knex({
