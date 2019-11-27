@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth')
 const HouseholdsService = require('./households-service');
+const {requireMemberAuth} = require('../middleware/member-jwt')
 // const shortid = require('shortid');
 
 const householdsRouter = express.Router();
@@ -98,6 +99,25 @@ householdsRouter
       })
       .catch(next);
   })
+
+
+  //NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS. 
+  //MIGHT WANT TO FIX THIS BEFORE DEPLOY
+  householdsRouter
+    .route('/householdId/members/memberId/tasks')
+    .all(requireMemberAuth)
+    .get((req, res, next) => {
+      console.log(req.user)
+      HouseholdsService.getMemberTasks(
+        req.app.get('db'),
+        req.member.household_id,
+        req.member.id,
+      )
+      .then(result => {
+        res.status(201).json(result)
+      })
+      .catch(next)
+    })
 
   householdsRouter
   .route('/:householdId/members')

@@ -14,15 +14,15 @@ async function requireMemberAuth(req, res, next) {
   try {
     const payload = membersAuthService.verifyJwt(bearerToken)
 
-    const user = await membersAuthService.getUserWithUserName(
+    const member = await membersAuthService.getMemberwithMemberName(
       req.app.get('db'),
       payload.sub,
     )
 
-    if (!user)
+    if (!member)
       return res.status(401).json({ error: 'Unauthorized request' })
 
-    req.user = user
+    req.member = member
     next()
   } catch (error) {
     if (error instanceof JsonWebTokenError)
