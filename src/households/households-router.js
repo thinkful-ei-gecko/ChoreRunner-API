@@ -115,4 +115,8 @@ householdsRouter
       .catch(next);
   })
 
+  //delete household? 
+
+  //Update household? 
+
 module.exports = householdsRouter;

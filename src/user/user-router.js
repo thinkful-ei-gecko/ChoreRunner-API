@@ -1,6 +1,7 @@
 const express = require('express')
 const path = require('path')
 const UserService = require('./user-service')
+const {requireAuth} = require('../middleware/jwt-auth')
 
 const userRouter = express.Router()
 const jsonBodyParser = express.json()
@@ -52,5 +53,23 @@ userRouter
       next(error)
     }
   })
+
+  userRouter
+    .get('/households', requireAuth, async (req, res, next) => {
+        console.log('in the endpoint')
+      try {
+        const user = await UserService.getUserAccount(
+          req.app.get('db'),
+          req.user.id
+        )
+
+        res.status(200).json(user)
+      } catch(error) {
+        next(error)
+      }
+    })
+  
+  
+
 
 module.exports = userRouter
