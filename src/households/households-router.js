@@ -14,21 +14,20 @@ householdsRouter
     const { name } = req.body;
     const user_id = req.user.id;
 
-    console.log(name, user_id)
-    const newName = name[0]
+  console.log(name, user_id)
+ 
+    if (!name)
+       return res.status(400).json({
+        error: `Missing name in request body`,
+      });
 
-      if (!name)
-        return res.status(400).json({
-          error: `Missing name in request body`,
-        });
-
-    try {
-      //use short id to generate house code
-      // let house_code = `${name}` + shortid.generate();
-      const newHousehold = {
-        name: newName,
-        user_id,
-      };
+  try {
+    //use short id to generate house code
+    // let house_code = `${name}` + shortid.generate();
+    const newHousehold = {
+      name,
+      user_id,
+    };
 
       const house = await HouseholdsService.insertHousehold(
         req.app.get('db'),

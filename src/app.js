@@ -7,16 +7,21 @@ const { NODE_ENV } = require('./config');
 const authRouter = require('./auth/auth-router');
 const userRouter = require('./user/user-router');
 const membersRouter = require('./members/members-router');
+const membersAuthRouter = require('./auth-members/members-auth');
 
 const householdsRouter = require('./households/households-router');
 
 const app = express();
 
-const morganOption = NODE_ENV === 'production';
-
-app.use(morgan(morganOption));
+const { CLIENT_ORIGIN } = require('./config');
+const morganSetting = process.env.NODE_ENV === 'production' ? 'tiny' : 'common';
+app.use(morgan(morganSetting));
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_ORIGIN
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('Hallo, Textbaustein!');
@@ -26,6 +31,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/households', householdsRouter);// /:household_id/tasks /:household_id/members 
 app.use('/api/members', membersRouter);
+app.use('/api/membersAuth', membersAuthRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
