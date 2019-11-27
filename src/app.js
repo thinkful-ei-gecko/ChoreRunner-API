@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
-app.use('/api/households', householdsRouter);
+app.use('/api/households', householdsRouter);// /:household_id/tasks /:household_id/members 
 app.use('/api/members', membersRouter);
 app.use('/api/membersAuth', membersAuthRouter);
 
