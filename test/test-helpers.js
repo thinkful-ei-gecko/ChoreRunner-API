@@ -1,21 +1,33 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-function makeUser(id, name, username, password) {
-  return {
-    id,
-    name,
-    username,
-    password
-  }
-}
-
-function makeUsersArray(num) {
-  let arr = []
-  for (let i = 0; i < num; i++) {
-    arr = [...arr, makeUser(i, `test-user-${i}`, `test-username-${i}`, 'Password123!')]
-  }
-  return arr
+function makeUsersArray() {
+  return [
+    {
+      id: 1,
+      username: 'test-user-1',
+      password: 'password',
+      name: 'Test user 1',
+    },
+    {
+      id: 2,
+      username: 'test-user-2',
+      password: 'password',
+      name: 'Test user 2',
+    },
+    {
+      id: 3,
+      username: 'test-user-3',
+      password: 'password',
+      name: 'Test user 3',
+    },
+    {
+      id: 4,
+      username: 'test-user-4',
+      password: 'password',
+      name: 'Test user 4',
+    },
+  ]
 }
 
 function seedUsers(db, users) {
@@ -23,11 +35,11 @@ function seedUsers(db, users) {
     ...user,
     password: bcrypt.hashSync(user.password, 1)
   }))
-  return db.into('blogful_users').insert(preppedUsers)
+  return db.into('users').insert(preppedUsers)
     .then(() =>
       // update the auto sequence to stay in sync
       db.raw(
-        `SELECT setval('blogful_users_id_seq', ?)`,
+        `SELECT setval('users_id_seq', ?)`,
         [users[users.length - 1].id],
       )
     )
@@ -38,6 +50,7 @@ function cleanTables(db) {
     trx.raw(
       `TRUNCATE
         users
+        RESTART IDENTITY CASCADE
       `
     )
       .then(() =>
@@ -67,7 +80,6 @@ function makeFixtures() {
 }
 
 module.exports = {
-  makeUser,
   makeUsersArray,
   seedUsers,
   cleanTables,
