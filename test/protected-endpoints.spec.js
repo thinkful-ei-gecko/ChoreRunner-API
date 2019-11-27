@@ -7,8 +7,9 @@ describe.skip('Protected endpoints', function() {
 
   const {
     testUsers,
-    testArticles,
-    testComments,
+    testHouseholds,
+    testMembers,
+    testTasks
   } = helpers.makeFixtures()
 
   before('make knex instance', () => {
@@ -25,32 +26,57 @@ describe.skip('Protected endpoints', function() {
 
   afterEach('cleanup', () => helpers.cleanTables(db))
 
-  beforeEach('insert articles', () =>
-    helpers.seedArticlesTables(
+  beforeEach('insert tables', () =>
+    helpers.seedChoresTables(
       db,
       testUsers,
-      testArticles,
-      testComments,
+      testHouseholds,
+      testMembers,
+      testTasks
     )
   )
 
   const protectedEndpoints = [
+    // GET and POST households
     {
-      name: 'GET /api/households/:householdId',
-      path: '/api/households/',
-      method: supertest(app).get,
+      name: 'GET /api/households',
+      path: '/api/households',
+      method: supertest(app).get
     },
     {
-      name: 'POST /api/households/:householdId',
-      path: '/api/',
+      name: 'POST /api/households',
+      path: '/api/households',
+      method: supertest(app).post
+    },
+    // GET and POST household tasks
+    {
+      name: 'GET /api/households/:householdId/tasks',
+      path: '/api/households/1/tasks',
+      method: supertest(app).get
+    },
+    {
+      name: 'POST /api/households/:householdId/tasks',
+      path: '/api/households/1/tasks',
+      method: supertest(app).post
+    },
+    // GETs all members of the household
+    {
+      name: 'GET /api/households/:householdId/members',
+      path: '/api/households/1/members',
+      method: supertest(app).get,
+    },
+    // POSTs a member to a household
+    {
+      name: 'POST /api/households/:householdId/members',
+      path: '/api/households/1/members',
       method: supertest(app).post,
     },
     //TODO what other endpoints are protected?
-    {
-      name: 'POST /api/auth/refresh',
-      path: '/api/auth/refresh',
-      method: supertest(app).post,
-    },
+    // {
+    //   name: 'POST /api/auth/refresh',
+    //   path: '/api/auth/refresh',
+    //   method: supertest(app).post,
+    // },
   ]
 
   protectedEndpoints.forEach(endpoint => {
@@ -69,7 +95,7 @@ describe.skip('Protected endpoints', function() {
       })
 
       it(`responds 401 'Unauthorized request' when invalid sub in payload`, () => {
-        const invalidUser = { user_name: 'user-not-existy', id: 1 }
+        const invalidUser = { username: 'user-not-existy', id: 1 }
         return endpoint.method(endpoint.path)
           .set('Authorization', helpers.makeAuthHeader(invalidUser))
           .expect(401, { error: `Unauthorized request` })
