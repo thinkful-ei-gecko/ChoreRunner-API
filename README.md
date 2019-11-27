@@ -117,7 +117,7 @@ Provided a parent is logged in and a household id is included in the request, it
 
 ### GET households/:householdId/members
 
-Provided a parent is logged in and a household id is included in the request, it returns an array listing all members of the household, including their name and username (TODO is this right? Does it include more info and why?).
+Provided a parent is logged in and a household id is included in the request, it returns an array listing all members of the household, including their name and username (TODO is this right? Does it include more info?).
 
 ```json
 //GET api/households/1/members/
