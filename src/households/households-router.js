@@ -97,6 +97,7 @@ householdsRouter
     })
     .delete(jsonBodyParser, (req, res, next) => {
       const {taskId} =req.body
+      console.log(taskId)
       HouseholdsService.completeTask(
         req.app.get('db'),
         req.member.id,
