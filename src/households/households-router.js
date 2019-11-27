@@ -77,4 +77,8 @@ householdsRouter
   });
 
 
+  //delete household? 
+
+  //Update household? 
+
 module.exports = householdsRouter;

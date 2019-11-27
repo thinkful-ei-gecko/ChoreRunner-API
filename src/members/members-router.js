@@ -10,6 +10,7 @@ membersRouter
   .post('/', requireAuth, jsonBodyParser, async (req, res, next) => {
     const { password, username, name, household_id } = req.body
     const user_id = req.user.id
+    console.log(password, username, name, household_id)
 
     for (const field of ['name', 'username', 'password', 'household_id'])
       if (!req.body[field])
@@ -54,5 +55,9 @@ membersRouter
       next(error)
     }
   })
+
+  //Delete member? 
+
+  //Update member?
 
   module.exports = membersRouter;

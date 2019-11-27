@@ -41,56 +41,24 @@ const UserService = {
       username: users.username,
     };
   },
-  // populateUserWords(db, user_id) {
-  //   return db.transaction(async trx => {
-  //     const [languageId] = await trx
-  //       .into('language')
-  //       .insert([
-  //         { name: 'German', user_id },
-  //       ], ['id'])
 
-  //     // when inserting words,
-  //     // we need to know the current sequence number
-  //     // so that we can set the `next` field of the linked language
-  //     const seq = await db
-  //       .from('word_id_seq')
-  //       .select('last_value')
-  //       .first()
-
-  //     const languageWords = [
-  //       ['heute', 'today', 2],
-  //       ['morgen', 'tomorrow', 3],
-  //       ['gestern', 'yesterday', 4],
-  //       ['die Woche', 'Week', 5],
-  //       ['das Jahr', 'Year', 6],
-  //       ['die Stunde', 'hour', 7],
-  //       ['Guten Morgen', 'Good morning', 8],
-  //       ['Taschenrechner', 'Calculator', 9],
-  //       ['das Frühstück', 'breakfast', 10],
-  //       ['das Abendessen', 'dinner', null]
-  //     ]
-
-  //     const [languageHeadId] = await trx
-  //       .into('word')
-  //       .insert(
-  //         languageWords.map(([original, translation, nextInc]) => ({
-  //           language_id: languageId.id,
-  //           original,
-  //           translation,
-  //           next: nextInc
-  //             ? Number(seq.last_value) + nextInc
-  //             : null
-  //         })),
-  //         ['id']
-  //       )
-
-  //     await trx('language')
-  //       .where('id', languageId.id)
-  //       .update({
-  //         head: languageHeadId.id,
-  //       })
-  //   })
-  // },
+  getUserAccount(db, id) {
+    return (
+      db
+        .select(
+          'users.name as user',
+          // 'members.name as member',
+          // 'members.id as memberId',
+          'households.id as householdId',
+          'households.name as housename'
+        )
+        .from('users')
+        .join('households', 'households.user_id', '=', 'users.id')
+        // .join('members', 'members.household_id', '=', 'households.id')
+        .where('users.id', id)
+        .groupBy('user', 'householdId', 'housename')
+    );
+  },
 };
 
 module.exports = UserService;

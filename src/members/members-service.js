@@ -39,6 +39,8 @@ const MembersService = {
       id: member.id,
       name: member.name,
       username: member.username,
+      household_id: member.household_id,
+      parent_id: member.user_id,
     };
   },
 };
