@@ -91,12 +91,24 @@ householdsRouter
 
   .get((req, res, next) => {
     const { householdId } = req.params;
-    return HouseholdsService.getAllTasks(
+    console.log('hello');
+    return HouseholdsService.getTasksForAll(
       req.app.get('db'),
       householdId
     )
       .then(tasks => {
-        return res.json(tasks)
+        const result = {};
+        tasks.forEach(task => {
+          if (task.member_id in result) {
+            result[task.member_id].tasks.push({'title': task.title, 'id': task.id, 'points': task.points});
+          } else {
+            result[task.member_id] = {
+                              name: task.name,
+                              tasks: [{'title': task.title, 'id': task.id, 'points': task.points}]
+                            }
+          }
+        })
+        return res.json(result)
       })
       .catch(next);
   })

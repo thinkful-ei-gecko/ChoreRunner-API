@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 
 const HouseholdsService = {
   insertHousehold(db, newHousehold) {
-    console.log('inside household', newHousehold);
     return db
       .insert(newHousehold)
       .into('households')
@@ -15,8 +14,6 @@ const HouseholdsService = {
       .into('tasks')
       .returning('*');
   },
-
-
   getMemberTasks(db, householdId, memberId) {
     return db
       .select('tasks.id', 'tasks.title', 'tasks.points')
@@ -24,18 +21,19 @@ const HouseholdsService = {
       .where('tasks.household_id', householdId)
       .andWhere('tasks.member_id', memberId)
       .groupBy('tasks.id', 'tasks.title', 'tasks.points');
-
+  },
   getAllHouseholds(db, id) {
     return db
       .select('*')
       .from('households')
       .where('user_id', id);
   },
-  getAllTasks(db, id) {
+  getTasksForAll(db, household_id) {
     return db
-      .select('*')
+      .select('tasks.id', 'member_id', 'title', 'points', 'name' )
       .from('tasks')
-      .where('household_id', id);
+      .leftJoin('members', 'members.id', 'tasks.member_id')
+      .where('members.household_id', household_id);
   },
   getAllMembers(db, id) {
     return db
@@ -67,7 +65,6 @@ const HouseholdsService = {
       household_id: member.household_id,
       parent_id: member.user_id,
     };
-
   },
 
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
@@ -79,6 +76,7 @@ const HouseholdsService = {
       .andWhere('tasks.id', taskId)
       .delete();
   },
+
 };
 
 module.exports = HouseholdsService;
