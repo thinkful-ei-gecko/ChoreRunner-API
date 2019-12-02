@@ -3,7 +3,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe.skip('Households Endpoints', function() {
+describe('Households Endpoints', function () {
   let db
 
   const {
@@ -11,193 +11,261 @@ describe.skip('Households Endpoints', function() {
     testHouseholds,
     testMembers,
     testTasks
-  } = helpers.makeFixtures()
+  } = helpers.makeFixtures();
 
-  const testUser = testUsers[0]
+  const testUser = testUsers[0];
 
   before('make knex instance', () => {
+    console.log(process.env.TEST_DATABASE_URL);
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DATABASE_URL,
-    })
-    app.set('db', db)
-  })
+    });
+    app.set('db', db);
+  });
 
-  afterEach('cleanup', () => helpers.cleanTables(db))
+  afterEach('cleanup', () => helpers.cleanTables(db));
 
-  after('disconnect from db', () => db.destroy())
-  before('cleanup', () => helpers.cleanTables(db))
+  after('disconnect from db', () => db.destroy());
+  before('cleanup', () => helpers.cleanTables(db));
 
-
-  describe(`GET /api/households`, () => {
+  describe(`GET api/households`, () => {
+    before('seed users', () => helpers.seedUsers(db, testUsers));
     context(`Given no households`, () => {
-      before('seed users', () => helpers.seedUsers(db, testUsers))
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
-          .get('/api/entries')
+          .get('/api/households')
           .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .then(res => {
             expect(res.body).to.be.an('array');
-            expect(res.body).to.eql([])
-          })
-      })
-    })
-
-    context('Given there are households in the database', () => {
-      beforeEach('insert households', () =>
+            expect(res.body).to.eql([]);
+          });
+      });
+    });
+    context(`Given households exist`, () => {
+      beforeEach('insert households', () => {
         helpers.seedChoresTables(
           db,
           testUsers,
-          testHouseholds,
-          testMembers,
-          testTasks
-        )
-      )
+          testHouseholds
+        );
+      });
 
-      it('responds with 200 and all of the entries', () => {
-        const expectedEntries = testHouseholds.map(household =>
-          helpers.makeExpectedEntry(
-            testUsers,
-            household,
-          )
-        )
-        return supertest(app)
-          .get('/api/entries')
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, expectedEntries)
-      })
-    })
+      // it(`responds with 200 and an array with all the households`, () => {
+      //   const expectedHouseholds = testHouseholds.map(household =>
+      //     helpers.makeExpectedHousehold(testUsers, household)
+      //   );
+      //   return supertest(app)
+      //     .get('/api/households')
+      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      //     .expect(200, expectedHouseholds);
+      // })
+    });
+  });
 
-    context(`Given an XSS attack entry`, () => {
-      const testUser = helpers.makeUsersArray()[1]
-      const {
-        maliciousEntry,
-        expectedEntry,
-      } = helpers.makeMaliciousEntry(testUser)
+});
 
-      beforeEach('insert malicious entry', () => {
-        return helpers.seedMaliciousEntry(
-          db,
-          testUser,
-          maliciousEntry,
-        )
-      })
 
-      it('removes XSS attack content', () => {
-        return supertest(app)
-          .get(`/api/entries`)
-          .set('Authorization', helpers.makeAuthHeader(testUser))
-          .expect(200)
-          .expect(res => {
-            expect(res.body[0].title).to.eql(expectedEntry.title)
-            expect(res.body[0].content).to.eql(expectedEntry.content)
-          })
-      })
-    })
-  })
+// const knex = require('knex')
+// const app = require('../src/app')
+// const helpers = require('./test-helpers')
 
-  describe(`GET /api/entries/:entry_id`, () => {
-    context(`Given no entries`, () => {
-      beforeEach(() => 
-        helpers.seedUsers(db, testUsers)
-      )
-      it(`responds with 404`, () => {
-        const entryId = 123456
-        return supertest(app)
-          .get(`/api/entries/${entryId}`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(404, { error: `Entry doesn't exist` })
-      })
-    })
+// describe.skip('Households Endpoints', function() {
+//   let db
 
-    context('Given there are entries in the database', () => {
-      beforeEach('insert entries', () =>
-        helpers.seedEntriesTables(
-          db,
-          testUsers,
-          testEntries,
-          testComments,
-        )
-      )
+//   const {
+//     testUsers,
+//     testHouseholds,
+//     testMembers,
+//     testTasks
+//   } = helpers.makeFixtures()
 
-      it('responds with 200 and the specified entry', () => {
-        const entryId = 2
-        const expectedEntry = helpers.makeExpectedEntry(
-          testUsers,
-          testEntries[entryId - 1],
-          testComments,
-        )
+//   const testUser = testUsers[0]
 
-        return supertest(app)
-          .get(`/api/entries/${entryId}`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, expectedEntry)
-      })
-    })
+//   before('make knex instance', () => {
+//     db = knex({
+//       client: 'pg',
+//       connection: process.env.TEST_DATABASE_URL,
+//     })
+//     app.set('db', db)
+//   })
 
-    context(`Given an XSS attack entry`, () => {
-      const testUser = helpers.makeUsersArray()[1]
-      const {
-        maliciousEntry,
-        expectedEntry,
-      } = helpers.makeMaliciousEntry(testUser)
+//   afterEach('cleanup', () => helpers.cleanTables(db))
 
-      beforeEach('insert malicious entry', () => {
-        return helpers.seedMaliciousEntry(
-          db,
-          testUser,
-          maliciousEntry,
-        )
-      })
+//   after('disconnect from db', () => db.destroy())
+//   before('cleanup', () => helpers.cleanTables(db))
 
-      it('removes XSS attack content', () => {
-        return supertest(app)
-          .get(`/api/entries/${maliciousEntry.id}`)
-          .set('Authorization', helpers.makeAuthHeader(testUser))
-          .expect(200)
-          .expect(res => {
-            expect(res.body.title).to.eql(expectedEntry.title)
-            expect(res.body.content).to.eql(expectedEntry.content)
-          })
-      })
-    })
-  })
 
-  describe(`GET /api/entries/:entry_id/comments`, () => {
-    context(`Given no entries`, () => {
-      beforeEach(() => 
-        helpers.seedUsers(db, testUsers)
-      )
-      it(`responds with 404`, () => {
-        const entryId = 123456
-        return supertest(app)
-          .get(`/api/entries/${entryId}/comments`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(404, { error: `Entry doesn't exist` })
-      })
-    })
+//   describe(`GET /api/households`, () => {
+//     context(`Given no households`, () => {
+//       before('seed users', () => helpers.seedUsers(db, testUsers))
+//       it(`responds with 200 and an empty list`, () => {
+//         return supertest(app)
+//           .get('/api/entries')
+//           .set('Authorization', helpers.makeAuthHeader(testUser))
+//           .expect(200)
+//           .then(res => {
+//             expect(res.body).to.be.an('array');
+//             expect(res.body).to.eql([])
+//           })
+//       })
+//     })
 
-    context('Given there are comments for entries in the database', () => {
-      beforeEach('insert entries', () =>
-        helpers.seedEntriesTables(
-          db,
-          testUsers,
-          testEntries,
-          testComments,
-        )
-      )
+//     context('Given there are households in the database', () => {
+//       beforeEach('insert households', () =>
+//         helpers.seedChoresTables(
+//           db,
+//           testUsers,
+//           testHouseholds,
+//           testMembers,
+//           testTasks
+//         )
+//       )
 
-      it('responds with 200 and the specified comments', () => {
-        const entryId = 1
-        const expectedComments = helpers.makeExpectedEntryComments(
-          testUsers, entryId, testComments
-        )
-        return supertest(app)
-          .get(`/api/entries/${entryId}/comments`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, expectedComments)
-      })
-    })
-  })
-})
+//       it('responds with 200 and all of the entries', () => {
+//         const expectedEntries = testHouseholds.map(household =>
+//           helpers.makeExpectedEntry(
+//             testUsers,
+//             household,
+//           )
+//         )
+//         return supertest(app)
+//           .get('/api/entries')
+//           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+//           .expect(200, expectedEntries)
+//       })
+//     })
+
+//     context(`Given an XSS attack entry`, () => {
+//       const testUser = helpers.makeUsersArray()[1]
+//       const {
+//         maliciousEntry,
+//         expectedEntry,
+//       } = helpers.makeMaliciousEntry(testUser)
+
+//       beforeEach('insert malicious entry', () => {
+//         return helpers.seedMaliciousEntry(
+//           db,
+//           testUser,
+//           maliciousEntry,
+//         )
+//       })
+
+//       it('removes XSS attack content', () => {
+//         return supertest(app)
+//           .get(`/api/entries`)
+//           .set('Authorization', helpers.makeAuthHeader(testUser))
+//           .expect(200)
+//           .expect(res => {
+//             expect(res.body[0].title).to.eql(expectedEntry.title)
+//             expect(res.body[0].content).to.eql(expectedEntry.content)
+//           })
+//       })
+//     })
+//   })
+
+//   describe(`GET /api/entries/:entry_id`, () => {
+//     context(`Given no entries`, () => {
+//       beforeEach(() => 
+//         helpers.seedUsers(db, testUsers)
+//       )
+//       it(`responds with 404`, () => {
+//         const entryId = 123456
+//         return supertest(app)
+//           .get(`/api/entries/${entryId}`)
+//           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+//           .expect(404, { error: `Entry doesn't exist` })
+//       })
+//     })
+
+//     context('Given there are entries in the database', () => {
+//       beforeEach('insert entries', () =>
+//         helpers.seedEntriesTables(
+//           db,
+//           testUsers,
+//           testEntries,
+//           testComments,
+//         )
+//       )
+
+//       it('responds with 200 and the specified entry', () => {
+//         const entryId = 2
+//         const expectedEntry = helpers.makeExpectedEntry(
+//           testUsers,
+//           testEntries[entryId - 1],
+//           testComments,
+//         )
+
+//         return supertest(app)
+//           .get(`/api/entries/${entryId}`)
+//           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+//           .expect(200, expectedEntry)
+//       })
+//     })
+
+//     context(`Given an XSS attack entry`, () => {
+//       const testUser = helpers.makeUsersArray()[1]
+//       const {
+//         maliciousEntry,
+//         expectedEntry,
+//       } = helpers.makeMaliciousEntry(testUser)
+
+//       beforeEach('insert malicious entry', () => {
+//         return helpers.seedMaliciousEntry(
+//           db,
+//           testUser,
+//           maliciousEntry,
+//         )
+//       })
+
+//       it('removes XSS attack content', () => {
+//         return supertest(app)
+//           .get(`/api/entries/${maliciousEntry.id}`)
+//           .set('Authorization', helpers.makeAuthHeader(testUser))
+//           .expect(200)
+//           .expect(res => {
+//             expect(res.body.title).to.eql(expectedEntry.title)
+//             expect(res.body.content).to.eql(expectedEntry.content)
+//           })
+//       })
+//     })
+//   })
+
+//   describe(`GET /api/entries/:entry_id/comments`, () => {
+//     context(`Given no entries`, () => {
+//       beforeEach(() => 
+//         helpers.seedUsers(db, testUsers)
+//       )
+//       it(`responds with 404`, () => {
+//         const entryId = 123456
+//         return supertest(app)
+//           .get(`/api/entries/${entryId}/comments`)
+//           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+//           .expect(404, { error: `Entry doesn't exist` })
+//       })
+//     })
+
+//     context('Given there are comments for entries in the database', () => {
+//       beforeEach('insert entries', () =>
+//         helpers.seedEntriesTables(
+//           db,
+//           testUsers,
+//           testEntries,
+//           testComments,
+//         )
+//       )
+
+//       it('responds with 200 and the specified comments', () => {
+//         const entryId = 1
+//         const expectedComments = helpers.makeExpectedEntryComments(
+//           testUsers, entryId, testComments
+//         )
+//         return supertest(app)
+//           .get(`/api/entries/${entryId}/comments`)
+//           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+//           .expect(200, expectedComments)
+//       })
+//     })
+//   })
+// })
