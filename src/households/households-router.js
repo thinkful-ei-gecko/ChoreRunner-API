@@ -79,6 +79,7 @@ householdsRouter
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     let { user_id, title, member_id, points } = req.body;
+    console.log(title, member_id, points)
     const { householdId } = req.params;
 
     if (!title || !member_id || !points) {
@@ -89,9 +90,9 @@ householdsRouter
       title,
       household_id: householdId,
       // user_id, 
-      member_id,
-      points
-    };
+
+      member_id, 
+      points};
 
     newTask.user_id = req.user.id;
 
@@ -239,6 +240,51 @@ householdsRouter
       next(error)
     }
   })
+
+  // Currently, not allowing users to reassign households to members. 
+  .patch(jsonBodyParser, async (req, res, next) => {
+    const {id, name, username, password} = req.body
+    console.log(id, name, username, password)
+    let member_id = id //So there's no confusion...
+
+    try {
+    //check to see that updated userName isn't a duplicate
+    const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
+      req.app.get('db'),
+      username,
+    )
+
+    if (hasMemberwithMemberName) {
+      return res.status(400).json({error: `Username already taken.`})
+    }
+
+    //update password needs to be rehashed
+    const hashedPassword = await HouseholdsService.hashPassword(password)
+
+    const updatedMember = {name, username, password:hashedPassword}
+
+    //Check to see that there are actually values passed to be updated
+    const numberOfValues = Object.values(updatedMember).filter(Boolean).length;
+
+    if(numberOfValues === 0) {
+      return res.status(400).json({
+        error: `Request must contain name, username, password, or household`
+      })
+    }
+
+    const updated = await HouseholdsService.updateMember(
+      req.app.get('db'),
+      member_id,
+      updatedMember, 
+    )
+
+    return res.status(201).json(updated)
+    } catch(error) {
+      next(error)
+    }
+  
+  })
+
 
 
   householdsRouter

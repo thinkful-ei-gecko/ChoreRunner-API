@@ -37,7 +37,7 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', 'member_id', 'title', 'points', 'name' )
+      .select('tasks.id', 'member_id', 'title', 'points', 'name')
       .from('tasks')
       .leftJoin('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
@@ -73,12 +73,22 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
+
+  updateMember(db, id, updatedMember) {
+    return db('members')
+      .where({ id })
+      .update(updatedMember)
+      .returning('*');
+  },
+
+
   //This method is for deleting a task from user's dashboard
   deleteTask(db, taskId) {
     return db('tasks')
       .where('tasks.id', taskId)
       .delete();
   },
+
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
   //SOMEHOW.
   completeTask(db, member_id, household_id, taskId) {
