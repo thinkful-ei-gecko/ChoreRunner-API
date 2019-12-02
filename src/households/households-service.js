@@ -73,7 +73,12 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
-
+  //This method is for deleting a task from user's dashboard
+  deleteTask(db, taskId) {
+    return db('tasks')
+      .where('tasks.id', taskId)
+      .delete();
+  },
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
   //SOMEHOW.
   completeTask(db, member_id, household_id, taskId) {

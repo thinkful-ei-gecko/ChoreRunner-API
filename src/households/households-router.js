@@ -119,12 +119,26 @@ householdsRouter
             result[task.member_id].tasks.push({ 'title': task.title, 'id': task.id, 'points': task.points });
           } else {
             result[task.member_id] = {
-              name: task.name,
-              tasks: [{ 'title': task.title, 'id': task.id, 'points': task.points }]
-            }
+                              member_id: task.member_id,
+                              name: task.name,
+                              tasks: [{'title': task.title, 'id': task.id, 'points': task.points}]
+                            }
           }
         })
         return res.json(result)
+      })
+      .catch(next);
+  })
+
+
+  householdsRouter
+  .route('/:householdId/tasks/:taskId')
+  .all(requireAuth)
+  .delete((req, res, next) => {
+    const { taskId } = req.params;
+    HouseholdsService.deleteTask(req.app.get('db'), taskId)
+      .then(() => {
+        res.status(204).end();
       })
       .catch(next);
   })
@@ -141,6 +155,7 @@ householdsRouter
       req.member.household_id,
       req.member.id,
     )
+
       .then(result => {
         res.status(201).json(result)
       })
