@@ -103,6 +103,7 @@ householdsRouter
             result[task.member_id].tasks.push({'title': task.title, 'id': task.id, 'points': task.points});
           } else {
             result[task.member_id] = {
+                              member_id: task.member_id,
                               name: task.name,
                               tasks: [{'title': task.title, 'id': task.id, 'points': task.points}]
                             }
