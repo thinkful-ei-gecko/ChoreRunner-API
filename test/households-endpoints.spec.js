@@ -1,19 +1,20 @@
+
 const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
-​
+
 describe.skip('Households Endpoints', function() {
   let db
-​
+
   const {
     testUsers,
     testHouseholds,
     testMembers,
     testTasks
   } = helpers.makeFixtures()
-​
+
   const testUser = testUsers[0]
-​
+
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
@@ -21,13 +22,13 @@ describe.skip('Households Endpoints', function() {
     })
     app.set('db', db)
   })
-​
+
   afterEach('cleanup', () => helpers.cleanTables(db))
-​
+
   after('disconnect from db', () => db.destroy())
   before('cleanup', () => helpers.cleanTables(db))
-​
-​
+
+
   describe(`GET /api/households`, () => {
     context(`Given no households`, () => {
       before('seed users', () => helpers.seedUsers(db, testUsers))
@@ -42,7 +43,7 @@ describe.skip('Households Endpoints', function() {
           })
       })
     })
-​
+
     context('Given there are households in the database', () => {
       beforeEach('insert households', () =>
         helpers.seedChoresTables(
@@ -53,7 +54,7 @@ describe.skip('Households Endpoints', function() {
           testTasks
         )
       )
-​
+
       it('responds with 200 and all of the entries', () => {
         const expectedEntries = testHouseholds.map(household =>
           helpers.makeExpectedEntry(
@@ -67,14 +68,14 @@ describe.skip('Households Endpoints', function() {
           .expect(200, expectedEntries)
       })
     })
-​
+
     context(`Given an XSS attack entry`, () => {
       const testUser = helpers.makeUsersArray()[1]
       const {
         maliciousEntry,
         expectedEntry,
       } = helpers.makeMaliciousEntry(testUser)
-​
+
       beforeEach('insert malicious entry', () => {
         return helpers.seedMaliciousEntry(
           db,
@@ -82,7 +83,7 @@ describe.skip('Households Endpoints', function() {
           maliciousEntry,
         )
       })
-​
+
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/entries`)
@@ -95,7 +96,7 @@ describe.skip('Households Endpoints', function() {
       })
     })
   })
-​
+
   describe(`GET /api/entries/:entry_id`, () => {
     context(`Given no entries`, () => {
       beforeEach(() => 
@@ -109,7 +110,7 @@ describe.skip('Households Endpoints', function() {
           .expect(404, { error: `Entry doesn't exist` })
       })
     })
-​
+
     context('Given there are entries in the database', () => {
       beforeEach('insert entries', () =>
         helpers.seedEntriesTables(
@@ -119,7 +120,7 @@ describe.skip('Households Endpoints', function() {
           testComments,
         )
       )
-​
+
       it('responds with 200 and the specified entry', () => {
         const entryId = 2
         const expectedEntry = helpers.makeExpectedEntry(
@@ -127,21 +128,21 @@ describe.skip('Households Endpoints', function() {
           testEntries[entryId - 1],
           testComments,
         )
-​
+
         return supertest(app)
           .get(`/api/entries/${entryId}`)
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(200, expectedEntry)
       })
     })
-​
+
     context(`Given an XSS attack entry`, () => {
       const testUser = helpers.makeUsersArray()[1]
       const {
         maliciousEntry,
         expectedEntry,
       } = helpers.makeMaliciousEntry(testUser)
-​
+
       beforeEach('insert malicious entry', () => {
         return helpers.seedMaliciousEntry(
           db,
@@ -149,7 +150,7 @@ describe.skip('Households Endpoints', function() {
           maliciousEntry,
         )
       })
-​
+
       it('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/entries/${maliciousEntry.id}`)
@@ -162,7 +163,7 @@ describe.skip('Households Endpoints', function() {
       })
     })
   })
-​
+
   describe(`GET /api/entries/:entry_id/comments`, () => {
     context(`Given no entries`, () => {
       beforeEach(() => 
@@ -176,7 +177,7 @@ describe.skip('Households Endpoints', function() {
           .expect(404, { error: `Entry doesn't exist` })
       })
     })
-​
+
     context('Given there are comments for entries in the database', () => {
       beforeEach('insert entries', () =>
         helpers.seedEntriesTables(
@@ -186,7 +187,7 @@ describe.skip('Households Endpoints', function() {
           testComments,
         )
       )
-​
+
       it('responds with 200 and the specified comments', () => {
         const entryId = 1
         const expectedComments = helpers.makeExpectedEntryComments(

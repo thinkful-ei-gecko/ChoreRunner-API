@@ -225,8 +225,37 @@ householdsRouter
     }
   })
 
-//delete household? 
 
-//Update household? 
+  householdsRouter
+    .route('/:id')
+    .all(requireAuth)
+    .get((req, res, next) => {
+      const { id } = req.params;
+      return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
+      .then(households => {
+        return res.json(households)
+      })
+      .catch(next);
+    })
+    .patch(jsonBodyParser, (req, res, next) => {
+      const { id } = req.params;
+      const { name, user_id } = req.body;
+      const newHousehold = { name, user_id };
+      const db = req.app.get('db');
+
+      const householdVals = Object.values(newHousehold).filter(Boolean).length;
+      if (householdVals === 0) {
+        return res
+          .status(400)
+          .json({ error: {
+            message: `Request body must contain household 'name'.`
+          }})
+      }
+      HouseholdsService.updateHouseholdName(db, id, newHousehold)
+        .then(() => res.status(204).end())
+        .catch(next)
+    })
+
+
 
 module.exports = householdsRouter;
