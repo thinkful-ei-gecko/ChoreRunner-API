@@ -9,6 +9,12 @@ const HouseholdsService = {
       .returning('*')
       .then(([household]) => household);
   },
+  deleteHousehold(db, id) {
+    return db('households')
+      .where({id})
+      .first()
+      .delete();
+  },
   insertTask(db, newTask) {
     return db
       .insert(newTask)
