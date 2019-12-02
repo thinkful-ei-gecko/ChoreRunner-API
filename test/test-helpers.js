@@ -34,22 +34,22 @@ function makeHouseholdsArray() {
   return [
     {
       id: 1,
-      name: "household1",
+      name: 'household1',
       user_id: 1
     },
     {
       id: 2,
-      name: "household2",
+      name: 'household2',
       user_id: 1
     },
     {
       id: 3,
-      name: "household3",
+      name: 'household3',
       user_id: 1
     },
     {
       id: 4,
-      name: "household4",
+      name: 'household4',
       user_id: 1
     }
   ]
@@ -60,33 +60,33 @@ function makeMembersArray() {
   return [
     {
       id: 1,
-      name: "kid1",
-      username: "kid1",
-      password: "kid1",
+      name: 'kid1',
+      username: 'kid1',
+      password: 'kid1',
       user_id: 1,
       household_id: 1
     },
     {
       id: 2,
-      name: "kid2",
-      username: "kid2",
-      password: "kid2",
+      name: 'kid2',
+      username: 'kid2',
+      password: 'kid2',
       user_id: 1,
       household_id: 1
     },
     {
       id: 3,
-      name: "kid3",
-      username: "kid3",
-      password: "kid3",
+      name: 'kid3',
+      username: 'kid3',
+      password: 'kid3',
       user_id: 1,
       household_id: 1
     },
     {
       id: 4,
-      name: "kid4",
-      username: "kid4",
-      password: "kid4",
+      name: 'kid4',
+      username: 'kid4',
+      password: 'kid4',
       user_id: 1,
       household_id: 1
     },
@@ -97,7 +97,7 @@ function makeTasksArray() {
   return [
     {
       id: 1,
-      title: "task1",
+      title: 'task1',
       household_id: 1,
       user_id: 1,
       member_id: 1,
@@ -105,7 +105,7 @@ function makeTasksArray() {
     },
     {
       id: 2,
-      title: "task2",
+      title: 'task2',
       household_id: 1,
       user_id: 1,
       member_id: 2,
@@ -113,7 +113,7 @@ function makeTasksArray() {
     },
     {
       id: 3,
-      title: "task3",
+      title: 'task3',
       household_id: 1,
       user_id: 1,
       member_id: 3,
@@ -121,7 +121,7 @@ function makeTasksArray() {
     },
     {
       id: 4,
-      title: "task4",
+      title: 'task4',
       household_id: 1,
       user_id: 1,
       member_id: 4,
@@ -145,7 +145,7 @@ function seedUsers(db, users) {
     )
 }
 
-function seedChoresTables(db, users, households, members, tasks=[]) {
+function seedChoresTables(db, users, households=[], members=[], tasks = []) {
   return db
     .transaction(async trx => {
       await seedUsers(trx, users)
@@ -159,10 +159,10 @@ function seedChoresTables(db, users, households, members, tasks=[]) {
         `SELECT setval('members_id_seq', ?)`,
         [members[members.length - 1].id]
       )
-      if(tasks.length) {
+      if (tasks.length) {
         await trx.into('tasks').insert(tasks);
         await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
-        [tasks[tasks.length - 1].id]
+          [tasks[tasks.length - 1].id]
         )
       }
     })
@@ -205,12 +205,28 @@ function makeFixtures() {
   return { testUsers, testHouseholds, testMembers, testTasks }
 }
 
+function makeMaliciousHousehold(user) {
+  return {
+    maliciousHousehold: {
+      id: 1,
+      name: 'A Foul Name <script>alert("xss");</script>',
+      user_id: user.id
+    },
+    expectedHousehold: {
+      id: 1,
+      name: 'A Foul Name &lt;script&gt;alert("xss");&lt;/script&gt;',
+      user_id: user.id
+    }
+  };
+}
+
 module.exports = {
   seedUsers,
   seedChoresTables,
   cleanTables,
 
   makeFixtures,
+  makeMaliciousHousehold,
   makeUsersArray,
   makeHouseholdsArray,
   makeMembersArray,
