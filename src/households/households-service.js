@@ -66,6 +66,22 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
+  updateTaskPoints(db, id, newPoints){
+    return db
+      .from('tasks')
+      .where('id', id)
+      .update({
+        points: newPoints
+      })
+  },
+  updateTaskTitle(db, id, newTitle){
+    return db
+      .from('tasks')
+      .where('id', id)
+      .update({
+        title: newTitle
+      })
+  },
 
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
   //SOMEHOW.
