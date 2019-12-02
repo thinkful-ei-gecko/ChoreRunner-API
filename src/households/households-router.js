@@ -130,6 +130,24 @@ householdsRouter
       })
       .catch(next);
   })
+  .patch(jsonBodyParser, (req, res, next) => {
+    console.log(req.body)
+    if(req.body.method === 'points'){
+      HouseholdsService.updateTaskPoints(req.app.get('db'), req.body.id, req.body.points)
+      .then( () => {
+        res.send('points updated')
+      })
+      .catch(next)
+    }
+
+    if(req.body.method === 'title'){
+      HouseholdsService.updateTaskTitle(req.app.get('db'), req.body.id, req.body.title)
+      .then( () => {
+        res.send('title updated')
+      })
+      .catch(next)
+    }
+  })
 
 
   householdsRouter

@@ -73,6 +73,22 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
+  updateTaskPoints(db, id, newPoints){
+    return db
+      .from('tasks')
+      .where('id', id)
+      .update({
+        points: newPoints
+      })
+  },
+  updateTaskTitle(db, id, newTitle){
+    return db
+      .from('tasks')
+      .where('id', id)
+      .update({
+        title: newTitle
+      })
+  },
 
   updateMember(db, id, updatedMember) {
     return db('members')
