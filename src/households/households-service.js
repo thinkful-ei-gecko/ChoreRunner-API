@@ -69,7 +69,8 @@ const HouseholdsService = {
   updateMember(db, id, updatedMember) {
     return db('members')
       .where({ id })
-      .update(updatedMember);
+      .update(updatedMember)
+      .returning('*');
   },
 
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...

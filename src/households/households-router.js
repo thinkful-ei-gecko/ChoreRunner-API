@@ -64,6 +64,7 @@ householdsRouter
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     let { user_id, title, member_id, points } = req.body;
+    console.log(title, member_id, points)
     const { householdId } = req.params;
 
     if (!title || !member_id || !points) {
@@ -76,6 +77,7 @@ householdsRouter
       // user_id, 
       member_id, 
       points};
+      console.log(newTask)
 
     newTask.user_id = req.user.id;
     
@@ -208,9 +210,11 @@ householdsRouter
       next(error)
     }
   })
+
+  // Currently, not allowing users to reassign households to members. 
   .patch(jsonBodyParser, async (req, res, next) => {
-    const {id, name, username, password, household_id} = req.body
-    console.log(id, name, username, password, household_id)
+    const {id, name, username, password} = req.body
+    console.log(id, name, username, password)
     let member_id = id //So there's no confusion...
 
     try {
@@ -227,7 +231,7 @@ householdsRouter
     //update password needs to be rehashed
     const hashedPassword = await HouseholdsService.hashPassword(password)
 
-    const updatedMember = {name, username, password:hashedPassword, household_id}
+    const updatedMember = {name, username, password:hashedPassword}
 
     //Check to see that there are actually values passed to be updated
     const numberOfValues = Object.values(updatedMember).filter(Boolean).length;
@@ -244,7 +248,7 @@ householdsRouter
       updatedMember, 
     )
 
-    res.status(201).json(updated)
+    return res.status(201).json(updated)
     } catch(error) {
       next(error)
     }
