@@ -15,7 +15,6 @@ householdsRouter
     const { name } = req.body;
     const user_id = req.user.id;
 
-    console.log(name, user_id);
 
     if (!name)
       return res.status(400).json({
