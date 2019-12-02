@@ -113,6 +113,18 @@ householdsRouter
       .catch(next);
   })
 
+  householdsRouter
+  .route('/:householdId/tasks/:taskId')
+  .all(requireAuth)
+  .delete((req, res, next) => {
+    const { taskId } = req.params;
+    HouseholdsService.deleteTask(req.app.get('db'), taskId)
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
+  })
+
   //NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS. 
   //MIGHT WANT TO FIX THIS BEFORE DEPLOY
   householdsRouter
