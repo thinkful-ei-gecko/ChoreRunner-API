@@ -30,7 +30,7 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', 'member_id', 'title', 'points', 'name' )
+      .select('tasks.id', 'member_id', 'title', 'points', 'name')
       .from('tasks')
       .leftJoin('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
@@ -66,6 +66,11 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
+  updateMember(db, id, updatedMember) {
+    return db('members')
+      .where({ id })
+      .update(updatedMember);
+  },
 
   //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
   //SOMEHOW.
@@ -76,7 +81,6 @@ const HouseholdsService = {
       .andWhere('tasks.id', taskId)
       .delete();
   },
-
 };
 
 module.exports = HouseholdsService;

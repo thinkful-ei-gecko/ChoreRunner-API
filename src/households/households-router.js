@@ -208,6 +208,48 @@ householdsRouter
       next(error)
     }
   })
+  .patch(jsonBodyParser, async (req, res, next) => {
+    const {id, name, username, password, household_id} = req.body
+    console.log(id, name, username, password, household_id)
+    let member_id = id //So there's no confusion...
+
+    try {
+    //check to see that updated userName isn't a duplicate
+    const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
+      req.app.get('db'),
+      username,
+    )
+
+    if (hasMemberwithMemberName) {
+      return res.status(400).json({error: `Username already taken.`})
+    }
+
+    //update password needs to be rehashed
+    const hashedPassword = await HouseholdsService.hashPassword(password)
+
+    const updatedMember = {name, username, password:hashedPassword, household_id}
+
+    //Check to see that there are actually values passed to be updated
+    const numberOfValues = Object.values(updatedMember).filter(Boolean).length;
+
+    if(numberOfValues === 0) {
+      return res.status(400).json({
+        error: `Request must contain name, username, password, or household`
+      })
+    }
+
+    const updated = await HouseholdsService.updateMember(
+      req.app.get('db'),
+      member_id,
+      updatedMember, 
+    )
+
+    res.status(201).json(updated)
+    } catch(error) {
+      next(error)
+    }
+  
+  })
 
   //delete household? 
 
