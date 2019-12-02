@@ -44,12 +44,22 @@ describe('Households Endpoints', function () {
     });
     context(`Given households exist`, () => {
       beforeEach('insert households', () => {
-        helpers.seedHouseholds(
+        helpers.seedChoresTables(
           db,
           testUsers,
           testHouseholds
         );
       });
+
+      // it(`responds with 200 and an array with all the households`, () => {
+      //   const expectedHouseholds = testHouseholds.map(household =>
+      //     helpers.makeExpectedHousehold(testUsers, household)
+      //   );
+      //   return supertest(app)
+      //     .get('/api/households')
+      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      //     .expect(200, expectedHouseholds);
+      // })
     });
   });
 
