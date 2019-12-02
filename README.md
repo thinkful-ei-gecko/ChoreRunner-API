@@ -58,7 +58,7 @@ If a parent is logged in, retrieves a list of households for a given parent. On 
 
 ### POST api/households
 
-If a parent is logged in, creates a new household associated to a logged-in parent account. It checks if the data contains a 'name' value. The new household is inserted into the database and assigned an id, then the API issues a response with a JSON object containing all households associated with the user, including the new one.
+If a parent is logged in, the api creates a new household associated with a logged-in parent account. It checks if the data contains a 'name' value. The new household is inserted into the database and assigned an id, then the API issues a response with a JSON object containing all households associated with the user, including the new one.
 
 ```json
 //POST api/households
@@ -85,7 +85,7 @@ If a parent is logged in, creates a new household associated to a logged-in pare
 
 ### GET households/:householdId/tasks
 
-Provided a parent is logged in and a household id is included in the request, it retrieves an array with the tasks for a given household. A task is associated to a household id, also and consists of a title, a member_id representing who the task is assigned to, and a point value to award the member upon completing the task.
+Provided a parent is logged in and a household id is included in the request, it retrieves an array with the tasks for a given household. A task is associated with a household id, title, member_id representing who the task is assigned to, and point value to award the member upon completing the task.
 
 ```json
 //GET api/households/1/tasks

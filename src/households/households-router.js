@@ -15,7 +15,6 @@ householdsRouter
     const { name } = req.body;
     const user_id = req.user.id;
 
-    console.log(name, user_id)
 
     if (!name)
       return res.status(400).json({
@@ -34,7 +33,6 @@ householdsRouter
         req.app.get('db'),
         newHousehold
       );
-
 
       res.status(201).json({
         owner_id: house.user_id,
@@ -58,6 +56,23 @@ householdsRouter
       })
       .catch(next);
   })
+
+householdsRouter
+  .route('/:householdId')
+  .all(requireAuth)
+  .delete(jsonBodyParser, (req, res, next) => {
+    const { householdId } = req.params;
+
+    HouseholdsService.deleteHousehold(
+      req.app.get('db'),
+      householdId
+    )
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
+
+  });
 
 householdsRouter
   .route('/:householdId/tasks')
