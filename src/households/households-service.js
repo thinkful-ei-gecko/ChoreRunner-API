@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const xss = require('xss');
 
 const HouseholdsService = {
   insertHousehold(db, newHousehold) {
@@ -75,6 +76,22 @@ const HouseholdsService = {
       .andWhere('tasks.household_id', household_id)
       .andWhere('tasks.id', taskId)
       .delete();
+  },
+
+  //For patch method on router "/:id"
+  serializeHousehold(household) {
+    return {
+      id: household.id,
+      name: xss(household.name),
+      user_id: household.user_id
+    }
+  },
+
+  updateHouseholdName(db, id, newHousehold) {
+    return db
+      .from('households')
+      .where({ id })
+      .update(newHousehold)
   },
 
 };
