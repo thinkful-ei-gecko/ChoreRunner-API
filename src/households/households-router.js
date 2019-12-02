@@ -63,14 +63,13 @@ householdsRouter
   .all(requireAuth)
   .delete(jsonBodyParser, (req, res, next) => {
     const { householdId } = req.params;
-    console.log(householdId);
 
     HouseholdsService.deleteHousehold(
       req.app.get('db'),
       householdId
     )
-      .then( () => {
-        return res.status(204).end();
+      .then(() => {
+        res.status(204).end();
       })
       .catch(next);
 
