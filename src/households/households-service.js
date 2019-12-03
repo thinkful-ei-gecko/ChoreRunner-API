@@ -39,7 +39,7 @@ const HouseholdsService = {
     return db
       .select('tasks.id', 'member_id', 'title', 'points', 'name')
       .from('tasks')
-      .leftJoin('members', 'members.id', 'tasks.member_id')
+      .join('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
   },
   getAllMembers(db, id) {
@@ -60,6 +60,11 @@ const HouseholdsService = {
       .into('members')
       .returning('*')
       .then(([member]) => member);
+  },
+  deleteMember(db, member_id) {
+    return db('members')
+      .where('id', member_id)
+      .delete();
   },
   hashPassword(password) {
     return bcrypt.hash(password, 12);
