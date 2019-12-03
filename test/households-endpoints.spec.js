@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe('Households Endpoints', function () {
+describe.only('Households Endpoints', function () {
   let db
 
   const {
@@ -15,7 +15,6 @@ describe('Households Endpoints', function () {
   const testUser = testUsers[0];
 
   before('make knex instance', () => {
-    console.log(process.env.TEST_DATABASE_URL);
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DATABASE_URL,
@@ -23,13 +22,13 @@ describe('Households Endpoints', function () {
     app.set('db', db);
   });
 
-  afterEach('cleanup', () => helpers.cleanTables(db));
-
-  after('disconnect from db', () => db.destroy());
   before('cleanup', () => helpers.cleanTables(db));
+  afterEach('cleanup', () => helpers.cleanTables(db));
+  after('disconnect from db', () => db.destroy());
 
   describe(`GET api/households`, () => {
     before('seed users', () => helpers.seedUsers(db, testUsers));
+    
     context(`Given no households`, () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
@@ -50,16 +49,18 @@ describe('Households Endpoints', function () {
           testHouseholds
         );
       });
+      
+      afterEach('cleanup', () => helpers.cleanTables(db));
 
-      // it(`responds with 200 and an array with all the households`, () => {
-      //   const expectedHouseholds = testHouseholds.map(household =>
-      //     helpers.makeExpectedHousehold(testUsers, household)
-      //   );
-      //   return supertest(app)
-      //     .get('/api/households')
-      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-      //     .expect(200, expectedHouseholds);
-      // })
+      it(`responds with 200 and an array with all the households`, () => {
+        const expectedHouseholds = testHouseholds.map(household =>
+          helpers.makeExpectedHousehold(testUsers, household)
+        );
+        return supertest(app)
+          .get('/api/households')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200, expectedHouseholds);
+      })
     });
   });
 
