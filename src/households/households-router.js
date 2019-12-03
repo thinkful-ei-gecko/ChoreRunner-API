@@ -60,6 +60,7 @@ householdsRouter
   .route('/:householdId')
   .all(requireAuth)
   .delete(jsonBodyParser, (req, res, next) => {
+    console.log('in delete')
     const { householdId } = req.params;
 
     HouseholdsService.deleteHousehold(
@@ -107,7 +108,6 @@ householdsRouter
 
   .get((req, res, next) => {
     const { householdId } = req.params;
-    console.log('hello');
     return HouseholdsService.getTasksForAll(
       req.app.get('db'),
       householdId
