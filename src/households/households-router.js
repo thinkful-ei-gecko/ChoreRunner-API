@@ -46,7 +46,6 @@ householdsRouter
   })
   .get((req, res, next) => {
     const user_id = req.user.id;
-    console.log(user_id);
     return HouseholdsService.getAllHouseholds(
       req.app.get('db'),
       user_id
@@ -317,9 +316,10 @@ householdsRouter
       .catch(next);
     })
     .patch(jsonBodyParser, (req, res, next) => {
-      const { id } = req.params;
-      const { name, user_id } = req.body;
-      const newHousehold = { name, user_id };
+      let user_id = req.user.id
+      const { id } = req.params; 
+      const { name } = req.body;
+      const newHousehold = { name };
       const db = req.app.get('db');
 
       const householdVals = Object.values(newHousehold).filter(Boolean).length;
@@ -331,7 +331,8 @@ householdsRouter
           }})
       }
       HouseholdsService.updateHouseholdName(db, id, newHousehold)
-        .then(() => res.status(204).end())
+        .then(() => HouseholdsService.getAllHouseholds(db, user_id))
+        .then((result) => res.json(result))
         .catch(next)
     })
 
