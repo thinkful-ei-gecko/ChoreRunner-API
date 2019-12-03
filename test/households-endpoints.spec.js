@@ -62,6 +62,31 @@ describe.only('Households Endpoints', function () {
           .expect(200, expectedHouseholds);
       })
     });
-  });
 
+    context(`Given an XSS attack household`, () => {
+      const testUser = helpers.makeUsersArray()[1]
+      const {
+        maliciousHousehold,
+        expectedHousehold,
+      } = helpers.makeMaliciousHousehold(testUser)
+
+      beforeEach('insert malicious household', () => {
+        return helpers.seedMaliciousHousehold(
+          db,
+          testUser,
+          maliciousHousehold,
+        )
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/api/households`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .expect(res => {
+            expect(res.body[0].name).to.eql(expectedHousehold.name)
+          })
+      })
+    })
+  });
 });

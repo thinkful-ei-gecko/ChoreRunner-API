@@ -3,6 +3,7 @@ const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth')
 const HouseholdsService = require('./households-service');
 const { requireMemberAuth } = require('../middleware/member-jwt')
+const xss = require('xss')
 // const shortid = require('shortid');
 
 const householdsRouter = express.Router();
@@ -39,7 +40,7 @@ householdsRouter
       res.status(201).json({
         owner_id: house.user_id,
         id: house.id,
-        name: house.name,
+        name: xss(house.name),
         // code: house.house_code,
       });
     } catch (error) {

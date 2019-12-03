@@ -283,9 +283,19 @@ function makeMaliciousHousehold(user) {
   };
 }
 
+function seedMaliciousHousehold(db, user, household) {
+  return seedUsers(db, [user])
+    .then(() =>
+      db
+        .into('households')
+        .insert([household])
+    )
+}
+
 module.exports = {
   seedUsers,
   seedChoresTables,
+  seedMaliciousHousehold,
   cleanTables,
 
   makeFixtures,
