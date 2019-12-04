@@ -43,6 +43,21 @@ const HouseholdsService = {
       .join('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
   },
+  getCompletedTasks(db, household_id, status) {
+    return db
+      .select('*')
+      .from('tasks')
+      .where('household_id', household_id)
+      .andWhere('status', status);
+  },
+  parentUpdateTaskStatus(db, taskId, newStatus) {
+    return db('tasks')
+      .where('id', taskId)
+      .update({
+        status: newStatus
+      })
+      .returning('*');
+  },
   getAllMembers(db, id) {
     return db
       .select('*')
