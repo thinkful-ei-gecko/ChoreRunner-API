@@ -117,6 +117,7 @@ householdsRouter
             result[task.member_id] = {
               member_id: task.member_id,
               name: task.name,
+              username: task.username,
               tasks: [{ title: task.title, id: task.id, points: task.points }],
             };
           }
@@ -269,11 +270,13 @@ householdsRouter
       .catch(next);
   })
 
-  // Currently, not allowing users to reassign households to members.
+householdsRouter
+  .route('/:householdId/members/:memberId')
+  .all(requireAuth)
+   // Currently, not allowing users to reassign households to members.
   .patch(jsonBodyParser, async (req, res, next) => {
-    const { id, name, username, password } = req.body;
-    console.log(id, name, username, password);
-    let member_id = id; //So there's no confusion...
+    const { name, username, password } = req.body;
+    const { memberId } = req.params;
 
     try {
       //check to see that updated userName isn't a duplicate
@@ -303,7 +306,7 @@ householdsRouter
 
       const updated = await HouseholdsService.updateMember(
         req.app.get('db'),
-        member_id,
+        memberId,
         updatedMember
       );
 

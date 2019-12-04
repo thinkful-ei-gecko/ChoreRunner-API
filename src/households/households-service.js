@@ -37,7 +37,7 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', 'member_id', 'title', 'points', 'name')
+      .select('tasks.id', 'member_id', 'title', 'points', 'name', 'username')
       .from('tasks')
       .join('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
