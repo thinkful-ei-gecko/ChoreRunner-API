@@ -52,16 +52,16 @@ householdsRouter
       req.app.get('db'),
       user_id
     )
-      // .then(households => {
-      //   return res.json(households);
-      // })
       .then(households => {
-        return res.json({
-          id: households.id,
-          name: xss(households.name),
-          user_id: households.user_id
-        })
+        return res.json(households);
       })
+      // .then(households => {
+      //   return res.json({
+      //     id: households.id,
+      //     name: xss(households.name),
+      //     user_id: households.user_id
+      //   })
+      // })
       .catch(next);
   });
 
