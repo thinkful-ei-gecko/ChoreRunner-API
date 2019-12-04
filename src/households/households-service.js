@@ -11,7 +11,7 @@ const HouseholdsService = {
   },
   deleteHousehold(db, id) {
     return db('households')
-      .where({id})
+      .where({ id })
       .first()
       .delete();
   },
@@ -23,12 +23,22 @@ const HouseholdsService = {
   },
   getMemberTasks(db, householdId, memberId) {
     return db
-      .select('tasks.id', 'tasks.title', 'tasks.points')
+      .select(
+        'tasks.id',
+        'tasks.title',
+        'tasks.points',
+        'status',
+      )
       .from('tasks')
       .where('tasks.household_id', householdId)
       .andWhere('tasks.status', 'assigned')
       .andWhere('tasks.member_id', memberId)
-      .groupBy('tasks.id', 'tasks.title', 'tasks.points');
+      .groupBy(
+        'tasks.id',
+        'tasks.title',
+        'tasks.points',
+        'status'
+      );
   },
   getAllHouseholds(db, id) {
     return db
@@ -94,21 +104,21 @@ const HouseholdsService = {
       parent_id: member.user_id,
     };
   },
-  updateTaskPoints(db, id, newPoints){
+  updateTaskPoints(db, id, newPoints) {
     return db
       .from('tasks')
       .where('id', id)
       .update({
-        points: newPoints
-      })
+        points: newPoints,
+      });
   },
-  updateTaskTitle(db, id, newTitle){
+  updateTaskTitle(db, id, newTitle) {
     return db
       .from('tasks')
       .where('id', id)
       .update({
-        title: newTitle
-      })
+        title: newTitle,
+      });
   },
 
   updateMember(db, id, updatedMember) {
@@ -118,7 +128,6 @@ const HouseholdsService = {
       .returning('*');
   },
 
-
   //This method is for deleting a task from user's dashboard
   deleteTask(db, taskId) {
     return db('tasks')
@@ -126,14 +135,14 @@ const HouseholdsService = {
       .delete();
   },
 
-  //THIS METHOD IS NOT FOR DELETING A TASK. IT WILL ULTIMATELY NEED TO ASSIGN POINTS...
-  //SOMEHOW.
+  //this method updated the task status to 'completed when the child marks it as done.
+  //Might want to return something?
   completeTask(db, member_id, household_id, taskId) {
     return db('tasks')
       .where('tasks.member_id', member_id)
       .andWhere('tasks.household_id', household_id)
       .andWhere('tasks.id', taskId)
-      .delete();
+      .update('status', 'completed');
   },
 
   //For patch method on router "/:id"
@@ -141,17 +150,16 @@ const HouseholdsService = {
     return {
       id: household.id,
       name: xss(household.name),
-      user_id: household.user_id
-    }
+      user_id: household.user_id,
+    };
   },
 
   updateHouseholdName(db, id, newHousehold) {
     return db
       .from('households')
       .where({ id })
-      .update(newHousehold)
+      .update(newHousehold);
   },
-
 };
 
 module.exports = HouseholdsService;

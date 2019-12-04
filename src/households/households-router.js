@@ -224,7 +224,8 @@ householdsRouter
       })
       .catch(next);
   })
-  .delete(jsonBodyParser, (req, res, next) => {
+  //This updates the task status to "completed"  when member clicks completed. 
+  .patch(jsonBodyParser, (req, res, next) => {
     const { taskId } = req.body;
     console.log(taskId);
     HouseholdsService.completeTask(
