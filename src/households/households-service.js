@@ -72,8 +72,8 @@ const HouseholdsService = {
   serializeMember(member) {
     return {
       id: member.id,
-      name: member.name,
-      username: member.username,
+      name: xss(member.name),
+      username: xss(member.username),
       household_id: member.household_id,
       parent_id: member.user_id,
     };

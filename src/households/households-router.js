@@ -2,7 +2,9 @@ const express = require('express');
 const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth');
 const HouseholdsService = require('./households-service');
-const { requireMemberAuth } = require('../middleware/member-jwt');
+const { requireMemberAuth } = require('../middleware/member-jwt')
+const xss = require('xss')
+
 // const shortid = require('shortid');
 
 const householdsRouter = express.Router();
@@ -36,7 +38,7 @@ householdsRouter
       res.status(201).json({
         owner_id: house.user_id,
         id: house.id,
-        name: house.name,
+        name: xss(house.name),
         // code: house.house_code,
       });
     } catch (error) {
@@ -45,8 +47,12 @@ householdsRouter
   })
   .get((req, res, next) => {
     const user_id = req.user.id;
-    console.log(user_id);
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), user_id)
+
+    return HouseholdsService.getAllHouseholds(
+      req.app.get('db'),
+      user_id
+    )
+
       .then(households => {
         return res.json(households);
       })
@@ -57,6 +63,7 @@ householdsRouter
   .route('/:householdId')
   .all(requireAuth)
   .delete(jsonBodyParser, (req, res, next) => {
+    console.log('in delete')
     const { householdId } = req.params;
 
     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
@@ -102,14 +109,17 @@ householdsRouter
 
   .get((req, res, next) => {
     const { householdId } = req.params;
-    console.log('hello');
-    return HouseholdsService.getTasksForAll(req.app.get('db'), householdId)
+
+    return HouseholdsService.getTasksForAll(
+      req.app.get('db'),
+      householdId
+    )
       .then(tasks => {
         const result = {};
         tasks.forEach(task => {
           if (task.member_id in result) {
             result[task.member_id].tasks.push({
-              title: task.title,
+              title: xss(task.title),
               id: task.id,
               points: task.points,
             });
@@ -326,24 +336,30 @@ householdsRouter
         return res.json(households);
       })
       .catch(next);
-  })
-  .patch(jsonBodyParser, (req, res, next) => {
-    const { id } = req.params;
-    const { name, user_id } = req.body;
-    const newHousehold = { name, user_id };
-    const db = req.app.get('db');
 
-    const householdVals = Object.values(newHousehold).filter(Boolean).length;
-    if (householdVals === 0) {
-      return res.status(400).json({
-        error: {
-          message: `Request body must contain household 'name'.`,
-        },
-      });
-    }
-    HouseholdsService.updateHouseholdName(db, id, newHousehold)
-      .then(() => res.status(204).end())
-      .catch(next);
-  });
+    })
+    .patch(jsonBodyParser, (req, res, next) => {
+      let user_id = req.user.id
+      const { id } = req.params; 
+      const { name } = req.body;
+      const newHousehold = { name };
+      const db = req.app.get('db');
+
+      const householdVals = Object.values(newHousehold).filter(Boolean).length;
+      if (householdVals === 0) {
+        return res
+          .status(400)
+          .json({ error: {
+            message: `Request body must contain household 'name'.`
+          }})
+      }
+      HouseholdsService.updateHouseholdName(db, id, newHousehold)
+        .then(() => HouseholdsService.getAllHouseholds(db, user_id))
+        .then((result) => res.json(result))
+        .catch(next)
+    })
+
+  })
+ 
 
 module.exports = householdsRouter;
