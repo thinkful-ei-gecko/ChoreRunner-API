@@ -63,7 +63,7 @@ describe.only('Households Endpoints', function () {
       })
     });
 
-    context(`Given an XSS attack household`, () => {
+    context.skip(`Given an XSS attack household`, () => {
       const testUser = helpers.makeUsersArray()[1]
       const {
         maliciousHousehold,
@@ -89,4 +89,71 @@ describe.only('Households Endpoints', function () {
       })
     })
   });
+
+  describe(`GET /api/households`, () => {
+    context(`Given no household`, () => {
+      before('seed users', () => helpers.seedUsers(db, testUsers))
+      it(`responds with 200 and an empty list`, () => {
+        return supertest(app)
+          .get('/api/households')
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .then(res => {
+            expect(res.body).to.be.an('array');
+            expect(res.body).to.eql([])
+          })
+      })
+    })
+
+    // Seed tasks and members table when ready
+    context('Given there are households in the database', () => {
+      beforeEach('insert households', () =>
+        helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+        )
+      )
+
+      it('responds with 200 and all of the households', () => {
+        const expectedhouseholds = testHouseholds.map(household =>
+          helpers.makeExpectedHousehold(
+            testUsers,
+            household,
+          )
+        )
+        return supertest(app)
+          .get('/api/households')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200, expectedhouseholds)
+      })
+    })
+
+    context.only(`Given an XSS attack household`, () => {
+      const testUser = helpers.makeUsersArray()[1]
+      const {
+        maliciousHousehold,
+        expectedHousehold,
+      } = helpers.makeMaliciousHousehold(testUser)
+
+      beforeEach('insert malicious household', () => {
+        return helpers.seedMaliciousHousehold(
+          db,
+          testUser,
+          maliciousHousehold,
+        )
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/api/households`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .expect(res => {
+            expect(res.body[0].name).to.eql(expectedHousehold.name)
+          })
+      })
+    })
+  })
+
 });

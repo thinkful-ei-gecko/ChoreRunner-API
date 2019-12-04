@@ -26,7 +26,7 @@ householdsRouter
       //use short id to generate house code
       // let house_code = `${name}` + shortid.generate();
       const newHousehold = {
-        name,
+        name: xss,
         user_id,
       };
 
@@ -52,9 +52,15 @@ householdsRouter
       req.app.get('db'),
       user_id
     )
-
+      // .then(households => {
+      //   return res.json(households);
+      // })
       .then(households => {
-        return res.json(households);
+        return res.json({
+          id: households.id,
+          name: xss(households.name),
+          user_id: households.user_id
+        })
       })
       .catch(next);
   });
@@ -358,8 +364,6 @@ householdsRouter
         .then((result) => res.json(result))
         .catch(next)
     })
-
-  })
  
 
 module.exports = householdsRouter;
