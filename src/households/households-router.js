@@ -359,7 +359,7 @@ householdsRouter
         .catch(next)
     })
 
-  })
+
  
 
 module.exports = householdsRouter;

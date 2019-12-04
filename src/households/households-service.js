@@ -26,6 +26,7 @@ const HouseholdsService = {
       .select('tasks.id', 'tasks.title', 'tasks.points')
       .from('tasks')
       .where('tasks.household_id', householdId)
+      .andWhere('tasks.status', 'assigned')
       .andWhere('tasks.member_id', memberId)
       .groupBy('tasks.id', 'tasks.title', 'tasks.points');
   },
