@@ -83,8 +83,7 @@ householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
-    let { user_id, title, member_id, points } = req.body;
-    console.log(title, member_id, points);
+    let { title, member_id, points } = req.body;
     const { householdId } = req.params;
 
     if (!title || !member_id || !points) {
@@ -98,8 +97,6 @@ householdsRouter
     const newTask = {
       title,
       household_id: householdId,
-      // user_id,
-
       member_id,
       points,
     };
@@ -168,6 +165,34 @@ householdsRouter
         .catch(next);
     }
   });
+
+householdsRouter
+  .route('/:householdId/tasks/status')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const { householdId } = req.params;
+    const { status } = req.query;
+    if (status == 'completed') {
+      HouseholdsService.getCompletedTasks(req.app.get('db'), householdId, status)
+        .then(tasks => {
+          return res.json(tasks);
+        })
+        .catch(next);
+    }
+  })
+
+  householdsRouter
+  .route('/:householdId/tasks/status/:taskId')
+  .all(requireAuth)
+  .patch(jsonBodyParser, (req, res, next) => {
+    const { taskId } = req.params;
+    const { newStatus } = req.body;
+    HouseholdsService.parentUpdateTaskStatus(req.app.get('db'), taskId, newStatus)
+      .then(task => {
+        return res.json(task);
+      })
+      .catch(next);
+  })
 
 householdsRouter
   .route('/:householdId/tasks/:taskId')
@@ -364,6 +389,7 @@ householdsRouter
         .then((result) => res.json(result))
         .catch(next)
     })
+
  
 
 module.exports = householdsRouter;
