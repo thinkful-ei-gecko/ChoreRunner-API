@@ -2,7 +2,9 @@ const express = require('express');
 const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth');
 const HouseholdsService = require('./households-service');
-const { requireMemberAuth } = require('../middleware/member-jwt');
+const { requireMemberAuth } = require('../middleware/member-jwt')
+const xss = require('xss')
+
 // const shortid = require('shortid');
 
 const householdsRouter = express.Router();
@@ -36,7 +38,7 @@ householdsRouter
       res.status(201).json({
         owner_id: house.user_id,
         id: house.id,
-        name: house.name,
+        name: xss(house.name),
         // code: house.house_code,
       });
     } catch (error) {
@@ -109,14 +111,14 @@ householdsRouter
         tasks.forEach(task => {
           if (task.member_id in result) {
             result[task.member_id].tasks.push({
-              title: task.title,
+              title: xss(task.title),
               id: task.id,
               points: task.points,
             });
           } else {
             result[task.member_id] = {
               member_id: task.member_id,
-              name: task.name,
+              name: xss(task.name),
               tasks: [{ title: task.title, id: task.id, points: task.points }],
             };
           }
@@ -330,7 +332,7 @@ householdsRouter
     const newHousehold = { name, user_id };
     const db = req.app.get('db');
 
-    const householdVals = Object.values(newHousehold).filter(Boolean).length;
+    const householdVals = Object.values(xss(newHousehold)).filter(Boolean).length;
     if (householdVals === 0) {
       return res.status(400).json({
         error: {
@@ -338,7 +340,7 @@ householdsRouter
         },
       });
     }
-    HouseholdsService.updateHouseholdName(db, id, newHousehold)
+    HouseholdsService.updateHouseholdName(db, id, xss(newHousehold))
       .then(() => res.status(204).end())
       .catch(next);
   });

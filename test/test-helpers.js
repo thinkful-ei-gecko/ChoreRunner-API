@@ -87,80 +87,80 @@ function makeHouseholdsArray() {
   ]
 }
 
-//Household members?
-// function makeMembersArray() {
-//   return [
-//     {
-//       id: 1,
-//       name: 'kid1',
-//       username: 'kid1',
-//       password: 'kid1',
-//       user_id: 1,
-//       household_id: 1
-//     },
-//     {
-//       id: 2,
-//       name: 'kid2',
-//       username: 'kid2',
-//       password: 'kid2',
-//       user_id: 1,
-//       household_id: 1
-//     },
-//     {
-//       id: 3,
-//       name: 'kid3',
-//       username: 'kid3',
-//       password: 'kid3',
-//       user_id: 1,
-//       household_id: 1
-//     },
-//     {
-//       id: 4,
-//       name: 'kid4',
-//       username: 'kid4',
-//       password: 'kid4',
-//       user_id: 1,
-//       household_id: 1
-//     },
-//   ]
-// }
+// Household members?
+function makeMembersArray() {
+  return [
+    {
+      id: 1,
+      name: 'kid1',
+      username: 'kid1',
+      password: 'kid1',
+      user_id: 1,
+      household_id: 1
+    },
+    {
+      id: 2,
+      name: 'kid2',
+      username: 'kid2',
+      password: 'kid2',
+      user_id: 1,
+      household_id: 1
+    },
+    {
+      id: 3,
+      name: 'kid3',
+      username: 'kid3',
+      password: 'kid3',
+      user_id: 1,
+      household_id: 1
+    },
+    {
+      id: 4,
+      name: 'kid4',
+      username: 'kid4',
+      password: 'kid4',
+      user_id: 1,
+      household_id: 1
+    },
+  ]
+}
 
-// function makeTasksArray() {
-//   return [
-//     {
-//       id: 1,
-//       title: 'task1',
-//       household_id: 1,
-//       user_id: 1,
-//       member_id: 1,
-//       points: 4
-//     },
-//     {
-//       id: 2,
-//       title: 'task2',
-//       household_id: 1,
-//       user_id: 1,
-//       member_id: 2,
-//       points: 3
-//     },
-//     {
-//       id: 3,
-//       title: 'task3',
-//       household_id: 1,
-//       user_id: 1,
-//       member_id: 3,
-//       points: 2
-//     },
-//     {
-//       id: 4,
-//       title: 'task4',
-//       household_id: 1,
-//       user_id: 1,
-//       member_id: 4,
-//       points: 1
-//     },
-//   ]
-// }
+function makeTasksArray() {
+  return [
+    {
+      id: 1,
+      title: 'task1',
+      household_id: 1,
+      user_id: 1,
+      member_id: 1,
+      points: 4
+    },
+    {
+      id: 2,
+      title: 'task2',
+      household_id: 1,
+      user_id: 1,
+      member_id: 2,
+      points: 3
+    },
+    {
+      id: 3,
+      title: 'task3',
+      household_id: 1,
+      user_id: 1,
+      member_id: 3,
+      points: 2
+    },
+    {
+      id: 4,
+      title: 'task4',
+      household_id: 1,
+      user_id: 1,
+      member_id: 4,
+      points: 1
+    },
+  ]
+}
 
 function seedUsers(db, users) {
   const preppedUsers = users.map(user => ({
@@ -177,19 +177,38 @@ function seedUsers(db, users) {
     )
 }
 
-// function makeExpectedHousehold(users, household) {
-//   users.map(user => {
+function makeExpectedHousehold(users, household) {
+  const user = users.find(user => user.id === household.user_id);
 
-//   })
-//   const user_id = user.id;
-//   return {
-//     id: 0,
-//     name: household,
-//     user_id
-//   };
-// }
+  return {
+    id: household.id,
+    name: household.name,
+    user_id: household.user_id
+  }
 
-function seedChoresTables(db, users, households=[], members=[], tasks = []) {
+}
+
+function makeExpectedEntry(users, entry) {
+  const user = users
+    .find(user => user.id === entry.user_id)
+  return {
+    id: entry.id,
+    title: entry.title,
+    content: entry.content,
+    duration: entry.duration,
+    mood_type: entry.mood_type,
+    date_created: entry.date_created,
+    user: {
+      id: user.id,
+      user_name: user.user_name,
+      full_name: user.full_name,
+      nickname: user.nickname,
+      date_created: user.date_created,
+    },
+  }
+}
+
+function seedChoresTables(db, users, households = [], members = [], tasks = []) {
   return db
     .transaction(async trx => {
       await seedUsers(trx, users)
@@ -198,17 +217,17 @@ function seedChoresTables(db, users, households=[], members=[], tasks = []) {
         `SELECT setval('households_id_seq', ?)`,
         [households[households.length - 1].id],
       )
-      await trx.into('members').insert(members)
-      await trx.raw(
-        `SELECT setval('members_id_seq', ?)`,
-        [members[members.length - 1].id]
-      )
-      if (tasks.length) {
-        await trx.into('tasks').insert(tasks);
-        await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
-          [tasks[tasks.length - 1].id]
-        )
-      }
+      // await trx.into('members').insert(members)
+      // await trx.raw(
+      //   `SELECT setval('members_id_seq', ?)`,
+      //   [members[members.length - 1].id]
+      // )
+      // if (tasks.length) {
+      //   await trx.into('tasks').insert(tasks);
+      //   await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
+      //     [tasks[tasks.length - 1].id]
+      //   )
+      // }
     })
 }
 
@@ -264,9 +283,19 @@ function makeMaliciousHousehold(user) {
   };
 }
 
+function seedMaliciousHousehold(db, user, household) {
+  return seedUsers(db, [user])
+    .then(() =>
+      db
+        .into('households')
+        .insert([household])
+    )
+}
+
 module.exports = {
   seedUsers,
   seedChoresTables,
+  seedMaliciousHousehold,
   cleanTables,
 
   makeFixtures,
