@@ -23,22 +23,12 @@ const HouseholdsService = {
   },
   getMemberTasks(db, householdId, memberId) {
     return db
-      .select(
-        'tasks.id',
-        'tasks.title',
-        'tasks.points',
-        'status',
-      )
+      .select('tasks.id', 'tasks.title', 'tasks.points', 'status')
       .from('tasks')
       .where('tasks.household_id', householdId)
       .andWhere('tasks.status', 'assigned')
       .andWhere('tasks.member_id', memberId)
-      .groupBy(
-        'tasks.id',
-        'tasks.title',
-        'tasks.points',
-        'status'
-      );
+      .groupBy('tasks.id', 'tasks.title', 'tasks.points', 'status');
   },
   getAllHouseholds(db, id) {
     return db
@@ -64,7 +54,7 @@ const HouseholdsService = {
     return db('tasks')
       .where('id', taskId)
       .update({
-        status: newStatus
+        status: newStatus,
       })
       .returning('*');
   },
@@ -179,14 +169,55 @@ const HouseholdsService = {
       .where({ id })
       .update(newHousehold);
   },
-  
+
   //To get scores for the leaderboard
   getHouseholdScores(db, household_id) {
     return db
       .select('members.id', 'members.name', 'members.total_score')
       .from('members')
-      .where('members.household_id', household_id)
-  }
+      .where('members.household_id', household_id);
+  },
+
+  getLevels(db, member_id) {
+    return db
+      .select(
+        'levels_members.level_id',
+        'members.name',
+        'members.total_score',
+        'levels.badge'
+      )
+      .from('levels_members')
+      .join('levels', 'levels.id', '=', 'levels_members.level_id')
+      .join('members', 'members.id', '=', 'levels_members.member_id')
+      .where('levels_members.member_id', member_id)
+      .groupBy(
+        'levels_members.level_id',
+        'members.name',
+        'members.total_score',
+        'levels.badge'
+      )
+      .first();
+  },
+
+  //test update level for user
+  updateLevel(db, member_id, newLevel) {
+    return db('levels_members')
+      .where('levels_members.member_id', member_id)
+      .update('level_id', newLevel);
+  },
+
+  updatePoints(db, member_id, newPoints) {
+    return db('members')
+      .where('members.id', member_id)
+      .update('total_score', newPoints);
+  },
 };
 
 module.exports = HouseholdsService;
+// completeTask(db, member_id, household_id, taskId) {
+//   return db('tasks')
+//     .where('tasks.member_id', member_id)
+//     .andWhere('tasks.household_id', household_id)
+//     .andWhere('tasks.id', taskId)
+//     .update('status', 'completed');
+// },

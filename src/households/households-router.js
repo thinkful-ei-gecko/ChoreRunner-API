@@ -48,22 +48,20 @@ householdsRouter
   .get((req, res, next) => {
     const user_id = req.user.id;
 
-
-    return HouseholdsService.getAllHouseholds(
-      req.app.get('db'),
-      user_id
-    )
-      .then(households => {
-        return res.json(households);
-      })
-      // .then(households => {
-      //   return res.json({
-      //     id: households.id,
-      //     name: xss(households.name),
-      //     user_id: households.user_id
-      //   })
-      // })
-      .catch(next);
+    return (
+      HouseholdsService.getAllHouseholds(req.app.get('db'), user_id)
+        .then(households => {
+          return res.json(households);
+        })
+        // .then(households => {
+        //   return res.json({
+        //     id: households.id,
+        //     name: xss(households.name),
+        //     user_id: households.user_id
+        //   })
+        // })
+        .catch(next)
+    );
   });
 
 householdsRouter
@@ -171,19 +169,24 @@ householdsRouter
     const { householdId } = req.params;
     const { status } = req.query;
     if (status == 'completed') {
-      HouseholdsService.getCompletedTasks(req.app.get('db'), householdId, status)
+      HouseholdsService.getCompletedTasks(
+        req.app.get('db'),
+        householdId,
+        status
+      )
         .then(tasks => {
           return res.json(tasks);
         })
         .catch(next);
     }
-  })
+  });
 
-  householdsRouter
+householdsRouter
   .route('/:householdId/tasks/status/:taskId')
   .all(requireAuth)
   .patch(jsonBodyParser, (req, res, next) => {
     const { taskId } = req.params;
+
     const { newStatus, points, memberId } = req.body;
     if (newStatus === 'assigned') {
       HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
@@ -191,6 +194,7 @@ householdsRouter
         return res.json(task);
       })
       .catch(next);
+
     }
     if (newStatus === 'approved') {
       HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
@@ -200,6 +204,7 @@ householdsRouter
       .catch(next);
     }
   })
+
 
 householdsRouter
   .route('/:householdId/tasks/:taskId')
@@ -398,23 +403,92 @@ householdsRouter
   });
 
 householdsRouter
-//houshold added due to odd conflict with route ':/householdId'
+  //houshold added due to odd conflict with route ':/householdId'
   .route('/household/scores')
   .all(requireMemberAuth)
   .get((req, res, next) => {
-    console.log('in the route')
-    console.log(req.member.household_id)
+    console.log('in the route');
+    console.log(req.member.household_id);
     console.log(req.member);
     HouseholdsService.getHouseholdScores(
       req.app.get('db'),
-      req.member.household_id,
+      req.member.household_id
     )
 
       .then(result => {
         res.status(201).json(result);
       })
       .catch(next);
-  })
+  });
 
+//update member level test
+householdsRouter
+  //require auth later
+  .post('/household/test', jsonBodyParser, async (req, res, next) => {
+    const { points, member_id } = req.body;
+
+    try {
+      //get the member's current points/level info
+      const userScores = await HouseholdsService.getLevels(
+        req.app.get('db'),
+        member_id
+      );
+
+      let { total_score, level_id } = userScores;
+      let newScore = total_score + points;
+      let newLevel = level_id;
+
+      if (newScore > level_id * 10) {
+        newLevel = level_id + 1;
+      }
+
+      if (newLevel > 6) {
+        await HouseholdsService.updatePoints(
+          req.app.get('db'),
+          member_id,
+          newScore
+        );
+      } else {
+        await HouseholdsService.updateLevel(
+          req.app.get('db'),
+          member_id,
+          newLevel
+        );
+
+        await HouseholdsService.updatePoints(
+          req.app.get('db'),
+          member_id,
+          newScore
+        );
+      }
+      
+     
+      // if (newScore <= level_id * 10 || level_id === 6)
+      //   console.log('we are here')
+      //   await HouseholdsService.updatePoints(
+      //     req.app.get('db'),
+      //     member_id,
+      //     newScore
+      //   );
+
+      res.status(200).json({
+        level_id: newLevel,
+        name: userScores.name,
+        total_score: newScore,
+        badge: userScores.badge
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+//example response
+
+//   {
+//     "level_id": 1,
+//     "name": "Kelley",
+//     "total_score": 25,
+//     "badge": "badge1"
+// }
 
 module.exports = householdsRouter;
