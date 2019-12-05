@@ -26,7 +26,7 @@ householdsRouter
       //use short id to generate house code
       // let house_code = `${name}` + shortid.generate();
       const newHousehold = {
-        name,
+        name: xss,
         user_id,
       };
 
@@ -48,11 +48,21 @@ householdsRouter
   .get((req, res, next) => {
     const user_id = req.user.id;
 
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), user_id)
 
+    return HouseholdsService.getAllHouseholds(
+      req.app.get('db'),
+      user_id
+    )
       .then(households => {
         return res.json(households);
       })
+      // .then(households => {
+      //   return res.json({
+      //     id: households.id,
+      //     name: xss(households.name),
+      //     user_id: households.user_id
+      //   })
+      // })
       .catch(next);
   });
 
@@ -74,8 +84,7 @@ householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
-    let { user_id, title, member_id, points } = req.body;
-    console.log(title, member_id, points);
+    let { title, member_id, points } = req.body;
     const { householdId } = req.params;
 
     if (!title || !member_id || !points) {
@@ -89,8 +98,6 @@ householdsRouter
     const newTask = {
       title,
       household_id: householdId,
-      // user_id,
-
       member_id,
       points,
     };
@@ -156,6 +163,34 @@ householdsRouter
         .catch(next);
     }
   });
+
+householdsRouter
+  .route('/:householdId/tasks/status')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const { householdId } = req.params;
+    const { status } = req.query;
+    if (status == 'completed') {
+      HouseholdsService.getCompletedTasks(req.app.get('db'), householdId, status)
+        .then(tasks => {
+          return res.json(tasks);
+        })
+        .catch(next);
+    }
+  })
+
+  householdsRouter
+  .route('/:householdId/tasks/status/:taskId')
+  .all(requireAuth)
+  .patch(jsonBodyParser, (req, res, next) => {
+    const { taskId } = req.params;
+    const { newStatus } = req.body;
+    HouseholdsService.parentUpdateTaskStatus(req.app.get('db'), taskId, newStatus)
+      .then(task => {
+        return res.json(task);
+      })
+      .catch(next);
+  })
 
 householdsRouter
   .route('/:householdId/tasks/:taskId')
@@ -353,7 +388,6 @@ householdsRouter
       .catch(next);
   });
 
-
 householdsRouter
 //houshold added due to odd conflict with route ':/householdId'
   .route('/household/scores')
@@ -372,5 +406,6 @@ householdsRouter
       })
       .catch(next);
   })
+
 
 module.exports = householdsRouter;
