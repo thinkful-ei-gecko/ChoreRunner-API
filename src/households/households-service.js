@@ -38,9 +38,9 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', 'member_id', 'title', 'points', 'name', 'username')
+      .select('tasks.id', {member_id: 'members.id'}, 'title', 'points', 'name', 'username')
       .from('tasks')
-      .join('members', 'members.id', 'tasks.member_id')
+      .rightJoin('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
   },
   getCompletedTasks(db, household_id, status) {
@@ -50,13 +50,32 @@ const HouseholdsService = {
       .where('household_id', household_id)
       .andWhere('status', status);
   },
-  parentUpdateTaskStatus(db, taskId, newStatus) {
+  parentReassignTaskStatus(db, taskId, newStatus) {
     return db('tasks')
       .where('id', taskId)
       .update({
         status: newStatus,
       })
       .returning('*');
+  },
+  parentApproveTaskStatus(db, taskId, points, memberId) {
+    return db('members')
+      .select('total_score')
+      .where('id', memberId)
+      .then(total => {
+        const currentTotal = total[0].total_score;
+        return db('members')
+          .where('id', memberId)
+          .update({
+            total_score: currentTotal + points
+          })
+      })
+      .then(() => {
+        return db('tasks')
+          .where('id', taskId)
+          .delete()
+          .returning('*');
+      })
   },
   getAllMembers(db, id) {
     return db
