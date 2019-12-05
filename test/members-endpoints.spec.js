@@ -3,14 +3,9 @@ const app = require('../src/app');
 const helpers = require('./test-helpers');
 
 describe.only(`Members Endpoints`, () => {
-
   let db;
 
-  const {
-    testUsers,
-    testHouseholds,
-    testMembers,
-  } = helpers.makeFixtures();
+  const { testUsers, testHouseholds, testMembers } = helpers.makeFixtures();
 
   const testUser = testUsers[0],
     testHousehold = testHouseholds[0];
@@ -31,14 +26,9 @@ describe.only(`Members Endpoints`, () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
 
   describe(`GET api/households/:householdId/members`, () => {
-
     context(`Households do not have members`, () => {
       beforeEach('insert households', () => {
-        helpers.seedChoresTables(
-          db,
-          testUsers,
-          testHouseholds
-        );
+        helpers.seedChoresTables(db, testUsers, testHouseholds);
       });
 
       it(`returns with a 200 status and an empty array`, () => {
@@ -51,12 +41,7 @@ describe.only(`Members Endpoints`, () => {
 
     context(`Households have some members`, () => {
       beforeEach('insert households', () => {
-        helpers.seedChoresTables(
-          db,
-          testUsers,
-          testHouseholds,
-          testMembers
-        );
+        helpers.seedChoresTables(db, testUsers, testHouseholds, testMembers);
       });
 
       it(`returns with a 200 status and an array with all members of household`, () => {
@@ -67,7 +52,5 @@ describe.only(`Members Endpoints`, () => {
           .expect(200, expectedMembers);
       });
     });
-
   });
-
 });

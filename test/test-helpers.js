@@ -213,11 +213,14 @@ function makeExpectedEntry(users, entry) {
 }
 
 function seedChoresTables(db, users, households, members, tasks) {
+  console.log('starting to seed tables')
   return db
     .transaction(async trx => {
-      await seedUsers(trx, users);
-
+      console.log('seeding users')
+      const check = await seedUsers(trx, users);
+      console.log('we are the users', check)
       if (households) {
+        console.log('Households')
         await trx.into('households').insert(households);
         await trx.raw(
           `SELECT setval('households_id_seq', ?)`,
@@ -225,6 +228,7 @@ function seedChoresTables(db, users, households, members, tasks) {
         );
       }
       if (members) {
+        console.log('members')
         await trx.into('members').insert(members);
         await trx.raw(
           `SELECT setval('members_id_seq', ?)`,
@@ -232,15 +236,18 @@ function seedChoresTables(db, users, households, members, tasks) {
         );
       }
       if (tasks) {
+        console.log('tasks')
         await trx.into('tasks').insert(tasks);
         await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
           [tasks[tasks.length - 1].id]
         );
       }
+      console.log('finishing seeding tables')
     });
 }
 
 function cleanTables(db) {
+  console.log('starting cleanup')
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
@@ -248,11 +255,11 @@ function cleanTables(db) {
         RESTART IDENTITY CASCADE
       `
     )
-      .then(() =>
-        Promise.all([
-          trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
-          trx.raw(`SELECT setval('users_id_seq', 0)`),
-        ])
+      .then(() => console.log('finished cleaning up')
+        // Promise.all([
+        //   trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
+        //   trx.raw(`SELECT setval('users_id_seq', 0)`),
+        // ])
       )
   )
 }
