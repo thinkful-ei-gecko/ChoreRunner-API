@@ -407,5 +407,67 @@ householdsRouter
       .catch(next);
   })
 
+  //update member level test 
+  householdsRouter
+  .route('/household/test')
+  //require auth later
+  .get(jsonBodyParser, (req, res, next) => {
+    const { points, member_id} = req.body;
+
+    //get the member's current points/level info
+    const userScores = HouseholdsService.getLevels(
+      req.app.get('db'),
+      member_id
+    )
+
+    .then(result => {
+      res.status(201).json(result);
+    })
+      .catch(next)
+
+
+    //check to see if the new points value is more than 10x the level. (Naive, but works for our purposes)
+
+    let {total_score, level_id } = userScores
+    const newScore = total_score + points
+
+    if (newScore > (level_id * 10)) {
+
+      //Make both of these async/await
+      let newLevel = level_id++
+      HouseholdsService.updateLevel(
+        req.app.get('db'),
+        member_id,
+        newLevel
+      )
+
+      HouseholdsService.updatePoints(
+        req.app.get('db'),
+        member_id,
+        newScore
+      )
+    } else {
+      //Also make async/await
+      HouseholdsService.updatePoints(
+        req.app.get('db'),
+        member_id,
+        newScore
+      )
+    }
+
+
+    //send a response. 
+  })
+
+  //example response
+
+//   {
+//     "level_id": 1,
+//     "name": "Kelley",
+//     "total_score": 25,
+//     "badge": "badge1"
+// }
+
+
 
 module.exports = householdsRouter;
