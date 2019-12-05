@@ -184,12 +184,21 @@ householdsRouter
   .all(requireAuth)
   .patch(jsonBodyParser, (req, res, next) => {
     const { taskId } = req.params;
-    const { newStatus } = req.body;
-    HouseholdsService.parentUpdateTaskStatus(req.app.get('db'), taskId, newStatus)
+    const { newStatus, points, memberId } = req.body;
+    if (newStatus === 'assigned') {
+      HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
       .then(task => {
         return res.json(task);
       })
       .catch(next);
+    }
+    if (newStatus === 'approved') {
+      HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
+      .then(task => {
+        return res.json(task);
+      })
+      .catch(next);
+    }
   })
 
 householdsRouter
