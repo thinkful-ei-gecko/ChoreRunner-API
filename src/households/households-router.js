@@ -36,7 +36,7 @@ householdsRouter
       );
 
       res.status(201).json({
-        owner_id: house.user_id,
+        user: house.user_id,
         id: house.id,
         name: xss(house.name),
         // code: house.house_code,
@@ -64,19 +64,19 @@ householdsRouter
     );
   });
 
-householdsRouter
-  .route('/:householdId')
-  .all(requireAuth)
-  .delete(jsonBodyParser, (req, res, next) => {
-    console.log('in delete');
-    const { householdId } = req.params;
+// householdsRouter
+//   .route('/:householdId')
+//   .all(requireAuth)
+//   .delete(jsonBodyParser, (req, res, next) => {
+//     console.log('in delete');
+//     const { householdId } = req.params;
 
-    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
-      .then(() => {
-        res.status(204).end();
-      })
-      .catch(next);
-  });
+//     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
+//       .then(() => {
+//         res.status(204).end();
+//       })
+//       .catch(next);
+//   });
 
 householdsRouter
   .route('/:householdId/tasks')
@@ -373,11 +373,25 @@ householdsRouter
 householdsRouter
   .route('/:id')
   .all(requireAuth)
+  .all(checkHouseholdExists)
   .get((req, res, next) => {
     const { id } = req.params;
     return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
       .then(households => {
         return res.json(households);
+      })
+      .catch(next);
+  })
+  // .get((req, res, next) => {
+  //   res.json(HouseholdsService.serializeHousehold(res.household))
+  // })
+  .delete(jsonBodyParser, (req, res, next) => {
+    console.log('in delete');
+    const { id } = req.params;
+
+    HouseholdsService.deleteHousehold(req.app.get('db'), id)
+      .then(() => {
+        res.status(204).end();
       })
       .catch(next);
   })
@@ -490,5 +504,25 @@ householdsRouter
 //     "total_score": 25,
 //     "badge": "badge1"
 // }
+
+  async function checkHouseholdExists(req, res, next) {
+    try {
+      const household = await HouseholdsService.getById(
+        req.app.get('db'),
+        req.params.id
+      )
+  
+      if (!household) {
+        return res.status(404).json({
+          error: `Household doesn't exist`
+        })
+      }
+  
+      res.household = household
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
 
 module.exports = householdsRouter;

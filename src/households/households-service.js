@@ -170,6 +170,15 @@ const HouseholdsService = {
       .update(newHousehold);
   },
 
+
+  getById(db, householdId) {
+    return db
+      .from('households')
+      .where('user_id', householdId)
+      .first()
+  },
+
+
   //To get scores for the leaderboard
   getHouseholdScores(db, household_id) {
     return db
