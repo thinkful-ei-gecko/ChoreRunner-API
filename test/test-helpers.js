@@ -62,27 +62,27 @@ function makeUsersArray() {
   ]
 }
 
-function makeHouseholdsArray() {
+function makeHouseholdsArray(users) {
   return [
     {
       id: 1,
       name: 'household1',
-      user_id: 1
+      user_id: users[0].id
     },
     {
       id: 2,
       name: 'household2',
-      user_id: 1
+      user_id: users[0].id
     },
     {
       id: 3,
       name: 'household3',
-      user_id: 1
+      user_id: users[0].id
     },
     {
       id: 4,
       name: 'household4',
-      user_id: 1
+      user_id: users[0].id
     }
   ]
 }
@@ -188,25 +188,25 @@ function makeExpectedHousehold(users, household) {
 
 }
 
-function makeExpectedEntry(users, entry) {
-  const user = users
-    .find(user => user.id === entry.user_id)
-  return {
-    id: entry.id,
-    title: entry.title,
-    content: entry.content,
-    duration: entry.duration,
-    mood_type: entry.mood_type,
-    date_created: entry.date_created,
-    user: {
-      id: user.id,
-      user_name: user.user_name,
-      full_name: user.full_name,
-      nickname: user.nickname,
-      date_created: user.date_created,
-    },
-  }
-}
+// function makeExpectedEntry(users, entry) {
+//   const user = users
+//     .find(user => user.id === entry.user_id)
+//   return {
+//     id: entry.id,
+//     title: entry.title,
+//     content: entry.content,
+//     duration: entry.duration,
+//     mood_type: entry.mood_type,
+//     date_created: entry.date_created,
+//     user: {
+//       id: user.id,
+//       user_name: user.user_name,
+//       full_name: user.full_name,
+//       nickname: user.nickname,
+//       date_created: user.date_created,
+//     },
+//   }
+// }
 
 function seedChoresTables(db, users, households = [], members = [], tasks = []) {
   return db

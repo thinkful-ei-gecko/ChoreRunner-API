@@ -136,6 +136,13 @@ const HouseholdsService = {
       .update(newHousehold)
   },
 
+  getById(db, householdId) {
+    return db
+      .from('households')
+      .where('user_id', householdId)
+      .first()
+  },
+
 };
 
 module.exports = HouseholdsService;

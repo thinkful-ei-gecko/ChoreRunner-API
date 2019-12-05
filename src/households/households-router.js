@@ -335,6 +335,7 @@ householdsRouter
 householdsRouter
   .route('/:id')
   .all(requireAuth)
+  .all(checkHouseholdExists)
   .get((req, res, next) => {
     const { id } = req.params;
     return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
@@ -344,6 +345,9 @@ householdsRouter
       .catch(next);
 
     })
+  // .get((req, res, next) => {
+  //   res.json(HouseholdsService.serializeHousehold(res.household))
+  // })
     .patch(jsonBodyParser, (req, res, next) => {
       let user_id = req.user.id
       const { id } = req.params; 
@@ -364,6 +368,25 @@ householdsRouter
         .then((result) => res.json(result))
         .catch(next)
     })
- 
+
+  async function checkHouseholdExists(req, res, next) {
+    try {
+      const household = await HouseholdsService.getById(
+        req.app.get('db'),
+        req.params.id
+      )
+  
+      if (!household) {
+        return res.status(404).json({
+          error: `Household doesn't exist`
+        })
+      }
+  
+      res.household = household
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
 
 module.exports = householdsRouter;
