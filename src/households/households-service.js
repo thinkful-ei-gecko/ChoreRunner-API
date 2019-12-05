@@ -77,6 +77,7 @@ const HouseholdsService = {
       username: xss(member.username),
       household_id: member.household_id,
       parent_id: member.user_id,
+      total_score: member.total_score
     };
   },
   updateTaskPoints(db, id, newPoints){
@@ -127,7 +128,7 @@ const HouseholdsService = {
       id: household.id,
       name: xss(household.name),
       user_id: household.user_id
-    }
+    };
   },
 
   updateHouseholdName(db, id, newHousehold) {

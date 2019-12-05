@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe.only('Households Endpoints', function () {
+describe('Households Endpoints', function () {
   let db
 
   const {
@@ -49,8 +49,6 @@ describe.only('Households Endpoints', function () {
           testHouseholds
         );
       });
-      
-      afterEach('cleanup', () => helpers.cleanTables(db));
 
       it(`responds with 200 and an array with all the households`, () => {
         const expectedHouseholds = testHouseholds.map(household =>
@@ -58,7 +56,7 @@ describe.only('Households Endpoints', function () {
         );
         return supertest(app)
           .get('/api/households')
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200, expectedHouseholds);
       })
     });

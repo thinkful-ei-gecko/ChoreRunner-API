@@ -96,7 +96,8 @@ function makeMembersArray() {
       username: 'kid1',
       password: 'kid1',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 20
     },
     {
       id: 2,
@@ -104,7 +105,8 @@ function makeMembersArray() {
       username: 'kid2',
       password: 'kid2',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 5
     },
     {
       id: 3,
@@ -112,7 +114,8 @@ function makeMembersArray() {
       username: 'kid3',
       password: 'kid3',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 30
     },
     {
       id: 4,
@@ -120,9 +123,10 @@ function makeMembersArray() {
       username: 'kid4',
       password: 'kid4',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 0
     },
-  ]
+  ];
 }
 
 function makeTasksArray() {
@@ -208,36 +212,38 @@ function makeExpectedEntry(users, entry) {
   }
 }
 
-function seedChoresTables(db, users, households = [], members = [], tasks = []) {
+function seedChoresTables(db, users, households, members, tasks) {
   return db
     .transaction(async trx => {
-      await seedUsers(trx, users)
-      await trx.into('households').insert(households)
-      await trx.raw(
-        `SELECT setval('households_id_seq', ?)`,
-        [households[households.length - 1].id],
-      )
-      // await trx.into('members').insert(members)
-      // await trx.raw(
-      //   `SELECT setval('members_id_seq', ?)`,
-      //   [members[members.length - 1].id]
-      // )
-      // if (tasks.length) {
-      //   await trx.into('tasks').insert(tasks);
-      //   await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
-      //     [tasks[tasks.length - 1].id]
-      //   )
-      // }
-    })
+      await seedUsers(trx, users);
+
+      if (households) {
+        await trx.into('households').insert(households);
+        await trx.raw(
+          `SELECT setval('households_id_seq', ?)`,
+          [households[households.length - 1].id],
+        );
+      }
+      if (members) {
+        await trx.into('members').insert(members);
+        await trx.raw(
+          `SELECT setval('members_id_seq', ?)`,
+          [members[members.length - 1].id]
+        );
+      }
+      if (tasks) {
+        await trx.into('tasks').insert(tasks);
+        await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
+          [tasks[tasks.length - 1].id]
+        );
+      }
+    });
 }
 
 function cleanTables(db) {
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
-        tasks,
-        members,
-        households,
         users
         RESTART IDENTITY CASCADE
       `

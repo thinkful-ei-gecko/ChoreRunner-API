@@ -60,20 +60,6 @@ householdsRouter
   });
 
 householdsRouter
-  .route('/:householdId')
-  .all(requireAuth)
-  .delete(jsonBodyParser, (req, res, next) => {
-    console.log('in delete')
-    const { householdId } = req.params;
-
-    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
-      .then(() => {
-        res.status(204).end();
-      })
-      .catch(next);
-  });
-
-householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
@@ -178,7 +164,7 @@ householdsRouter
 //NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS.
 //MIGHT WANT TO FIX THIS BEFORE DEPLOY
 householdsRouter
-  .route('/householdId/members/memberId/tasks')
+  .route('/:householdId/members/:memberId/tasks')
   .all(requireMemberAuth)
   .get((req, res, next) => {
     console.log(req.member);
@@ -283,7 +269,7 @@ householdsRouter
 householdsRouter
   .route('/:householdId/members/:memberId')
   .all(requireAuth)
-   // Currently, not allowing users to reassign households to members.
+  // Currently, not allowing users to reassign households to members.
   .patch(jsonBodyParser, async (req, res, next) => {
     const { name, username, password } = req.body;
     const { memberId } = req.params;
@@ -327,39 +313,50 @@ householdsRouter
   });
 
 householdsRouter
-  .route('/:id')
+  .route('/:householdId')
   .all(requireAuth)
   .get((req, res, next) => {
     const { id } = req.params;
     return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
       .then(households => {
-        return res.json(households);
+        return res.json(HouseholdsService.serializeHousehold(households));
       })
       .catch(next);
 
-    })
-    .patch(jsonBodyParser, (req, res, next) => {
-      let user_id = req.user.id
-      const { id } = req.params; 
-      const { name } = req.body;
-      const newHousehold = { name };
-      const db = req.app.get('db');
+  })
+  .patch(jsonBodyParser, (req, res, next) => {
+    let user_id = req.user.id
+    const { id } = req.params;
+    const { name } = req.body;
+    const newHousehold = { name };
+    const db = req.app.get('db');
 
-      const householdVals = Object.values(newHousehold).filter(Boolean).length;
-      if (householdVals === 0) {
-        return res
-          .status(400)
-          .json({ error: {
+    const householdVals = Object.values(newHousehold).filter(Boolean).length;
+    if (householdVals === 0) {
+      return res
+        .status(400)
+        .json({
+          error: {
             message: `Request body must contain household 'name'.`
-          }})
-      }
-      HouseholdsService.updateHouseholdName(db, id, newHousehold)
-        .then(() => HouseholdsService.getAllHouseholds(db, user_id))
-        .then((result) => res.json(result))
-        .catch(next)
-    })
+          }
+        })
+    }
+    HouseholdsService.updateHouseholdName(db, id, newHousehold)
+      .then(() => HouseholdsService.getAllHouseholds(db, user_id))
+      .then((result) => res.json(result))
+      .catch(next)
+  })
+  .delete(jsonBodyParser, (req, res, next) => {
+    const { householdId } = req.params;
+
+    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
+  });
 
 
- 
+
 
 module.exports = householdsRouter;
