@@ -133,7 +133,8 @@ function makeTasksArray() {
       household_id: 1,
       user_id: 1,
       member_id: 1,
-      points: 4
+      points: 4,
+      status: 'assigned'
     },
     {
       id: 2,
@@ -141,7 +142,8 @@ function makeTasksArray() {
       household_id: 1,
       user_id: 1,
       member_id: 2,
-      points: 3
+      points: 3,
+      status: 'assigned'
     },
     {
       id: 3,
@@ -149,7 +151,8 @@ function makeTasksArray() {
       household_id: 1,
       user_id: 1,
       member_id: 3,
-      points: 2
+      points: 2,
+      status: 'completed'
     },
     {
       id: 4,
@@ -157,7 +160,8 @@ function makeTasksArray() {
       household_id: 1,
       user_id: 1,
       member_id: 4,
-      points: 1
+      points: 1,
+      status: 'approved'
     },
   ]
 }
@@ -186,6 +190,24 @@ function makeExpectedHousehold(users, household) {
     user_id: household.user_id
   }
 
+}
+
+function makeExpectedHouseholdTask(users, householdId, tasks) {
+  const expectedTasks = tasks
+    .filter(task => task.id === householdId)
+  
+  return expectedTasks.map(task => {
+    const userTask = users.find(user => user.id === task.user_id)
+    return {
+      id: task.id,
+      title: task.title,
+      household_id: task.household_id,
+      user_id: task.user_id,
+      member_id: task.member_id,
+      points: task.points,
+      status: task.status
+    }
+  })
 }
 
 // function makeExpectedEntry(users, entry) {
@@ -303,6 +325,7 @@ module.exports = {
   makeUsersArray,
   makeHouseholdsArray,
   makeExpectedHousehold,
+  makeExpectedHouseholdTask,
   // makeMembersArray,
   // makeTasksArray,
   makeAuthHeader

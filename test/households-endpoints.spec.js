@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe.skip('Households Endpoints', function () {
+describe.only('Households Endpoints', function () {
   let db
 
   const {
@@ -171,28 +171,28 @@ describe.skip('Households Endpoints', function () {
     })
 
     //seed testTasks later
-    context('Given there are households in the database', () => {
-      beforeEach('insert household', () =>
-        helpers.seedChoresTables(
-          db,
-          testUsers,
-          testHouseholds,
-        )
-      )
+    // context('Given there are households in the database', () => {
+    //   beforeEach('insert household', () =>
+    //     helpers.seedChoresTables(
+    //       db,
+    //       testUsers,
+    //       testHouseholds,
+    //     )
+    //   )
       //seed testTasks later
-      it('responds with 200 and the specified household', () => {
-        const householdId = 1
-        const expectedHousehold = helpers.makeExpectedHousehold(
-          testUsers,
-          testHouseholds[householdId - 1],
-        )
+      // it('responds with 200 and the specified household', () => {
+      //   const householdId = 1
+      //   const expectedHousehold = helpers.makeExpectedHousehold(
+      //     testUsers,
+      //     testHouseholds[householdId - 1],
+      //   )
 
-        return supertest(app)
-          .get(`/api/households/${householdId}`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, expectedHousehold)
-      })
-    })
+      //   return supertest(app)
+      //     .get(`/api/households/${householdId}`)
+      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      //     .expect(200, expectedHousehold)
+      // })
+    // })
 
     context.skip(`Given an XSS attack household`, () => {
       const testUser = helpers.makeUsersArray()[1]
@@ -220,5 +220,72 @@ describe.skip('Households Endpoints', function () {
       })
     })
   })
+
+  describe('POST /api/households/:id/tasks', () => {
+    context(`Given when one req.body is missing`, () => {
+      beforeEach('insert chores', () => {
+        return helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers,
+          testTasks
+        )
+      })
+  
+      it(`responds with 400 'Missing task name, member id or points in request body' when title missing`, () => {
+        const tasksMissingTitle = {
+          member_id: 1,
+          points: 5
+        };
+        return supertest(app)
+          .post('/api/households/:id/tasks')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send(tasksMissingTitle)
+          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+      })
+  
+      it(`responds with 400 'Missing task name, member id or points in request body' when member_id missing`, () => {
+        const tasksMissingMember = {
+          title: 'title',
+          points: 5
+        };
+        return supertest(app)
+          .post('/api/households/:id/tasks')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send(tasksMissingMember)
+          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+      })
+  
+      it(`responds with 400 'Missing task name, member id or points in request body' when points missing`, () => {
+        const tasksMissingPoints = {
+          member_id: 1,
+          title: 'title'
+        };
+        return supertest(app)
+          .post('/api/households/:id/tasks')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send(tasksMissingPoints)
+          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+      })
+    })
+    
+    context(`Given when we have correct values in req.body`, () => {
+      beforeEach('insert chores', () => {
+        return helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers,
+          testTasks
+        )
+      })
+
+      it('responds with 201 when POSTs successfully', () => {
+        
+      })
+    })
+  })
+
 
 });

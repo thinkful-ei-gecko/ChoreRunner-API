@@ -36,7 +36,7 @@ householdsRouter
       );
 
       res.status(201).json({
-        owner_id: house.user_id,
+        user: house.user_id,
         id: house.id,
         name: xss(house.name),
         // code: house.house_code,
@@ -66,19 +66,19 @@ householdsRouter
       .catch(next);
   });
 
-householdsRouter
-  .route('/:householdId')
-  .all(requireAuth)
-  .delete(jsonBodyParser, (req, res, next) => {
-    console.log('in delete');
-    const { householdId } = req.params;
+// householdsRouter
+//   .route('/:householdId')
+//   .all(requireAuth)
+//   .delete(jsonBodyParser, (req, res, next) => {
+//     console.log('in delete');
+//     const { householdId } = req.params;
 
-    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
-      .then(() => {
-        res.status(204).end();
-      })
-      .catch(next);
-  });
+//     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
+//       .then(() => {
+//         res.status(204).end();
+//       })
+//       .catch(next);
+//   });
 
 householdsRouter
   .route('/:householdId/tasks')
@@ -371,6 +371,16 @@ householdsRouter
   // .get((req, res, next) => {
   //   res.json(HouseholdsService.serializeHousehold(res.household))
   // })
+  .delete(jsonBodyParser, (req, res, next) => {
+    console.log('in delete');
+    const { id } = req.params;
+
+    HouseholdsService.deleteHousehold(req.app.get('db'), id)
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next);
+  })
   .patch(jsonBodyParser, (req, res, next) => {
     let user_id = req.user.id;
     const { id } = req.params;
