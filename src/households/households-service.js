@@ -183,7 +183,7 @@ const HouseholdsService = {
   //test update level for user
   updateLevel(db, member_id, newLevel) {
     return db('levels_members')
-      .where('members_levels.member_id', member_id)
+      .where('levels_members.member_id', member_id)
       .update('level_id', newLevel);
   },
 
