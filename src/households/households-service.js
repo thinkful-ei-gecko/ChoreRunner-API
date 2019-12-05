@@ -160,6 +160,14 @@ const HouseholdsService = {
       .where({ id })
       .update(newHousehold);
   },
+  
+  //To get scores for the leaderboard
+  getHouseholdScores(db, household_id) {
+    return db
+      .select('members.id', 'members.name', 'members.total_score')
+      .from('members')
+      .where('members.household_id', household_id)
+  }
 };
 
 module.exports = HouseholdsService;

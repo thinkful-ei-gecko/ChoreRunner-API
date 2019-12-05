@@ -2,8 +2,8 @@ const express = require('express');
 const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth');
 const HouseholdsService = require('./households-service');
-const { requireMemberAuth } = require('../middleware/member-jwt')
-const xss = require('xss')
+const { requireMemberAuth } = require('../middleware/member-jwt');
+const xss = require('xss');
 
 // const shortid = require('shortid');
 
@@ -48,6 +48,7 @@ householdsRouter
   .get((req, res, next) => {
     const user_id = req.user.id;
 
+
     return HouseholdsService.getAllHouseholds(
       req.app.get('db'),
       user_id
@@ -69,7 +70,7 @@ householdsRouter
   .route('/:householdId')
   .all(requireAuth)
   .delete(jsonBodyParser, (req, res, next) => {
-    console.log('in delete')
+    console.log('in delete');
     const { householdId } = req.params;
 
     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
@@ -113,10 +114,7 @@ householdsRouter
   .get((req, res, next) => {
     const { householdId } = req.params;
 
-    return HouseholdsService.getTasksForAll(
-      req.app.get('db'),
-      householdId
-    )
+    return HouseholdsService.getTasksForAll(req.app.get('db'), householdId)
       .then(tasks => {
         const result = {};
         tasks.forEach(task => {
@@ -206,8 +204,8 @@ householdsRouter
       .catch(next);
   });
 
-//NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS.
-//MIGHT WANT TO FIX THIS BEFORE DEPLOY
+// NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS.
+// MIGHT WANT TO FIX THIS BEFORE DEPLOY
 householdsRouter
   .route('/householdId/members/memberId/tasks')
   .all(requireMemberAuth)
@@ -224,7 +222,7 @@ householdsRouter
       })
       .catch(next);
   })
-  //This updates the task status to "completed"  when member clicks completed. 
+  //This updates the task status to "completed"  when member clicks completed.
   .patch(jsonBodyParser, (req, res, next) => {
     const { taskId } = req.body;
     console.log(taskId);
@@ -304,18 +302,18 @@ householdsRouter
   //delete members
   .delete(jsonBodyParser, (req, res, next) => {
     const { member_id } = req.body;
-    console.log(member_id)
+    console.log(member_id);
     HouseholdsService.deleteMember(req.app.get('db'), member_id)
       .then(() => {
         res.status(204).end();
       })
       .catch(next);
-  })
+  });
 
 householdsRouter
   .route('/:householdId/members/:memberId')
   .all(requireAuth)
-   // Currently, not allowing users to reassign households to members.
+  // Currently, not allowing users to reassign households to members.
   .patch(jsonBodyParser, async (req, res, next) => {
     const { name, username, password } = req.body;
     const { memberId } = req.params;
@@ -368,29 +366,46 @@ householdsRouter
         return res.json(households);
       })
       .catch(next);
+  })
+  .patch(jsonBodyParser, (req, res, next) => {
+    let user_id = req.user.id;
+    const { id } = req.params;
+    const { name } = req.body;
+    const newHousehold = { name };
+    const db = req.app.get('db');
 
-    })
-    .patch(jsonBodyParser, (req, res, next) => {
-      let user_id = req.user.id
-      const { id } = req.params; 
-      const { name } = req.body;
-      const newHousehold = { name };
-      const db = req.app.get('db');
+    const householdVals = Object.values(newHousehold).filter(Boolean).length;
+    if (householdVals === 0) {
+      return res.status(400).json({
+        error: {
+          message: `Request body must contain household 'name'.`,
+        },
+      });
+    }
+    HouseholdsService.updateHouseholdName(db, id, newHousehold)
+      .then(() => HouseholdsService.getAllHouseholds(db, user_id))
+      .then(result => res.json(result))
+      .catch(next);
+  });
 
-      const householdVals = Object.values(newHousehold).filter(Boolean).length;
-      if (householdVals === 0) {
-        return res
-          .status(400)
-          .json({ error: {
-            message: `Request body must contain household 'name'.`
-          }})
-      }
-      HouseholdsService.updateHouseholdName(db, id, newHousehold)
-        .then(() => HouseholdsService.getAllHouseholds(db, user_id))
-        .then((result) => res.json(result))
-        .catch(next)
-    })
+householdsRouter
+//houshold added due to odd conflict with route ':/householdId'
+  .route('/household/scores')
+  .all(requireMemberAuth)
+  .get((req, res, next) => {
+    console.log('in the route')
+    console.log(req.member.household_id)
+    console.log(req.member);
+    HouseholdsService.getHouseholdScores(
+      req.app.get('db'),
+      req.member.household_id,
+    )
 
- 
+      .then(result => {
+        res.status(201).json(result);
+      })
+      .catch(next);
+  })
+
 
 module.exports = householdsRouter;
