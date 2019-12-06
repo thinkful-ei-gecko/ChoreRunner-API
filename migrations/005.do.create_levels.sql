@@ -8,7 +8,7 @@ CREATE TABLE "levels" (
 
 
 CREATE TABLE "levels_members" (
-  "id" INTEGER PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "member_id" INTEGER REFERENCES "members"(id) ON DELETE CASCADE NOT NULL,
   "level_id" INTEGER REFERENCES "levels"(id) ON DELETE CASCADE NOT NULL
 );
