@@ -26,7 +26,7 @@ householdsRouter
       //use short id to generate house code
       // let house_code = `${name}` + shortid.generate();
       const newHousehold = {
-        name: xss,
+        name: xss(name),
         user_id,
       };
 
@@ -36,7 +36,7 @@ householdsRouter
       );
 
       res.status(201).json({
-        user: house.user_id,
+        user_id: house.user_id,
         id: house.id,
         name: xss(house.name),
         // code: house.house_code,
@@ -104,7 +104,10 @@ householdsRouter
 
     HouseholdsService.insertTask(req.app.get('db'), newTask)
       .then(result => {
-        res.status(201).json(result[0]);
+        res
+          .status(201)
+          //.location(`/${newTask.user_id}/tasks`)
+          .json(result[0]);
       })
       .catch(next);
   })
@@ -118,7 +121,7 @@ householdsRouter
         tasks.forEach(task => {
           if (task.member_id in result) {
             result[task.member_id].tasks.push({
-              title: xss(task.title),
+              title: task.title,
               id: task.id,
               points: task.points,
             });
@@ -381,12 +384,12 @@ householdsRouter
   });
 
 householdsRouter
-  .route('/:id')
+  .route('/:householdId')
   .all(requireAuth)
   .all(checkHouseholdExists)
   .get((req, res, next) => {
-    const { id } = req.params;
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
+    const { householdId } = req.params;
+    return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
       .then(households => {
         return res.json(households);
       })
@@ -397,9 +400,9 @@ householdsRouter
   // })
   .delete(jsonBodyParser, (req, res, next) => {
     console.log('in delete');
-    const { id } = req.params;
+    const { householdId } = req.params;
 
-    HouseholdsService.deleteHousehold(req.app.get('db'), id)
+    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
       .then(() => {
         res.status(204).end();
       })
@@ -407,7 +410,7 @@ householdsRouter
   })
   .patch(jsonBodyParser, (req, res, next) => {
     let user_id = req.user.id;
-    const { id } = req.params;
+    const { householdId } = req.params;
     const { name } = req.body;
     const newHousehold = { name };
     const db = req.app.get('db');
@@ -420,7 +423,7 @@ householdsRouter
         },
       });
     }
-    HouseholdsService.updateHouseholdName(db, id, newHousehold)
+    HouseholdsService.updateHouseholdName(db, householdId, newHousehold)
       .then(() => HouseholdsService.getAllHouseholds(db, user_id))
       .then(result => res.json(result))
       .catch(next);
@@ -531,7 +534,7 @@ householdsRouter
     try {
       const household = await HouseholdsService.getById(
         req.app.get('db'),
-        req.params.id
+        req.params.householdId
       )
   
       if (!household) {

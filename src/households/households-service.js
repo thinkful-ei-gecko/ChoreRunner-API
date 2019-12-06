@@ -181,7 +181,7 @@ const HouseholdsService = {
   getById(db, householdId) {
     return db
       .from('households')
-      .where('user_id', householdId)
+      .where('id', householdId)
       .first()
   },
 
