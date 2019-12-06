@@ -221,8 +221,8 @@ describe('Households Endpoints', function () {
     })
   })
 
-  describe('POST /api/households/:id/tasks', () => {
-    context(`Given when one req.body is missing`, () => {
+  describe('POST /api/households/:householdId/tasks', () => {
+    context(`Given when one request body is missing`, () => {
       beforeEach('insert chores', () => {
         return helpers.seedChoresTables(
           db,
@@ -270,7 +270,7 @@ describe('Households Endpoints', function () {
       })
     })
     
-    context(`Given when we have correct values in req.body`, () => {
+    context.only(`Given when we have correct values in req.body`, () => {
       beforeEach('insert chores', () => {
         return helpers.seedChoresTables(
           db,
@@ -280,12 +280,33 @@ describe('Households Endpoints', function () {
           testTasks
         )
       })
-
+      //working on this. NON-functional
       it('responds with 201 when POSTs successfully', () => {
-        
+        const fullTaskBody = {
+          title: 'test-title',
+          member_id: 1,
+          points: 5
+        };
+        const householdId = 123;
+        return supertest(app)
+          .post(`/api/households/${householdId}/tasks`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send(fullTaskBody)
+          .expect(201)
+          .expect(res => {
+            expect(res.body.title).to.eql(fullTaskBody.title);
+            expect(res.body.member_id).to.eql(fullTaskBody.member_id);
+            expect(res.body.points).to.eql(fullTaskBody.points);
+            expect(res.body).to.have.property('id');
+            expect(res.headers.location).to.eql(`/api/households/${res.body.id}/tasks`);
+          })
+          .then(postRes => {
+            supertest(app)
+              .get(`/api/households/${postRes.body.id}/tasks`)
+              .expect(postRes.body)
+              
+          })
       })
     })
   })
-
-
 });
