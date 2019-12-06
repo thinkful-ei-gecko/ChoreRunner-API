@@ -184,29 +184,31 @@ householdsRouter
     }
   });
 
-householdsRouter
-  .route('/:householdId/tasks/status/:taskId')
-  .all(requireAuth)
-  .patch(jsonBodyParser, (req, res, next) => {
-    const { taskId } = req.params;
+// householdsRouter
+//   .route('/:householdId/tasks/status/:taskId')
+//   .all(requireAuth)
+//   .patch(jsonBodyParser, (req, res, next) => {
+//     const { taskId } = req.params;
 
-    const { newStatus, points, memberId } = req.body;
-    if (newStatus === 'assigned') {
-      HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
+//     //This handles returned tasks for diaspproval. DONT TOUCH.
+//     const { newStatus, points, memberId } = req.body;
+//     if (newStatus === 'assigned') {
+//       HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
+//       .then(task => {
+//         return res.json(task);
+//       })
+//       .catch(next);
+//     }
 
-    }
-    if (newStatus === 'approved') {
-      HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
-    }
-  })
+//     //Handles Approval, dont touch. Need the delete.
+//     if (newStatus === 'approved') {
+//       HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
+//       .then(task => {
+//         return res.json(task);
+//       })
+//       .catch(next);
+//     }
+//   })
 
 
 householdsRouter
@@ -471,8 +473,27 @@ householdsRouter
     }
   })
   .post(jsonBodyParser, async (req, res, next) => {
-    const { points } = req.body;
-    const member_id = req.member.id;
+    const { points, member_id } = req.body;
+
+    
+    //This handles returned tasks for diaspproval. DONT TOUCH.
+    const { newStatus, points, memberId } = req.body;
+    if (newStatus === 'assigned') {
+      HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
+      .then(task => {
+        return res.json(task);
+      })
+      .catch(next);
+    }
+
+    //Handles Approval, dont touch. Need the delete.
+    if (newStatus === 'approved') {
+      HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
+      .then(task => {
+        return res.json(task);
+      })
+      .catch(next);
+    }
 
     try {
       //get the member's current points/level info
