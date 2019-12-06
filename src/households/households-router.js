@@ -106,7 +106,7 @@ householdsRouter
       .then(result => {
         res
           .status(201)
-          //.location(`/${newTask.user_id}/tasks`)
+          .location(`/api/households/${newTask.user_id}/tasks`)
           .json(result[0]);
       })
       .catch(next);

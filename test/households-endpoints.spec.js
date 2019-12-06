@@ -270,7 +270,7 @@ describe('Households Endpoints', function () {
       })
     })
     
-    context.only(`Given when we have correct values in req.body`, () => {
+    context(`Given when we have correct values in req.body`, () => {
       beforeEach('insert chores', () => {
         return helpers.seedChoresTables(
           db,
@@ -280,14 +280,14 @@ describe('Households Endpoints', function () {
           testTasks
         )
       })
-      //working on this. NON-functional
+
       it('responds with 201 when POSTs successfully', () => {
         const fullTaskBody = {
           title: 'test-title',
           member_id: 1,
           points: 5
         };
-        const householdId = 123;
+        const householdId = 1;
         return supertest(app)
           .post(`/api/households/${householdId}/tasks`)
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
@@ -298,13 +298,33 @@ describe('Households Endpoints', function () {
             expect(res.body.member_id).to.eql(fullTaskBody.member_id);
             expect(res.body.points).to.eql(fullTaskBody.points);
             expect(res.body).to.have.property('id');
-            expect(res.headers.location).to.eql(`/api/households/${res.body.id}/tasks`);
+            expect(res.headers.location).to.eql(`/api/households/${householdId}/tasks`);
           })
-          .then(postRes => {
-            supertest(app)
-              .get(`/api/households/${postRes.body.id}/tasks`)
-              .expect(postRes.body)
-              
+      })
+    })
+    //AssertionError: expected undefined to deeply equal (maliciousTask.title)
+    context.only(`Given an XSS attack on household task`, () => {
+      const testUser = helpers.makeUsersArray()[0]
+      const {
+        maliciousTask,
+        expectedTask,
+      } = helpers.makeMaliciousTask(testUser)
+
+      beforeEach('insert malicious household task', () => {
+        return helpers.seedMaliciousTask(
+          db,
+          testUser,
+          maliciousTask,
+        )
+      })
+
+      it('removes XSS attack title', () => {
+        return supertest(app)
+          .get(`/api/households/${maliciousTask.id}/tasks`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.eql(expectedTask.title)
           })
       })
     })

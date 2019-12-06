@@ -239,17 +239,17 @@ function seedChoresTables(db, users, households = [], members = [], tasks = []) 
         `SELECT setval('households_id_seq', ?)`,
         [households[households.length - 1].id],
       )
-      // await trx.into('members').insert(members)
-      // await trx.raw(
-      //   `SELECT setval('members_id_seq', ?)`,
-      //   [members[members.length - 1].id]
-      // )
-      // if (tasks.length) {
-      //   await trx.into('tasks').insert(tasks);
-      //   await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
-      //     [tasks[tasks.length - 1].id]
-      //   )
-      // }
+      await trx.into('members').insert(members)
+      await trx.raw(
+        `SELECT setval('members_id_seq', ?)`,
+        [members[members.length - 1].id]
+      )
+      if (tasks.length) {
+        await trx.into('tasks').insert(tasks);
+        await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
+          [tasks[tasks.length - 1].id]
+        )
+      }
     })
 }
 
@@ -257,6 +257,7 @@ function cleanTables(db) {
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
+        levels,
         tasks,
         members,
         households,
@@ -314,14 +315,42 @@ function seedMaliciousHousehold(db, user, household) {
     )
 }
 
+function makeMaliciousTask(user) {
+  return {
+    maliciousTask: {
+      id: 1,
+      title: 'A Foul Name <script>alert("xss");</script>',
+      user_id: user.id,
+      points: 1,
+    },
+    expectedTask: {
+      id: 1,
+      title: 'A Foul Name &lt;script&gt;alert("xss");&lt;/script&gt;',
+      user_id: user.id,
+      points: 1,
+    }
+  }
+}
+
+function seedMaliciousTask(db, user, task) {
+  return seedUsers(db, [user])
+    .then(() => {
+      db
+        .into('tasks')
+        .insert([task])
+    })
+}
+
 module.exports = {
+  cleanTables,
   seedUsers,
   seedChoresTables,
   seedMaliciousHousehold,
-  cleanTables,
+  seedMaliciousTask,
 
-  makeFixtures,
   makeMaliciousHousehold,
+  makeMaliciousTask,
+  makeFixtures,
   makeUsersArray,
   makeHouseholdsArray,
   makeExpectedHousehold,
