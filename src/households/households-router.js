@@ -297,6 +297,13 @@ householdsRouter
         newMember
       );
 
+      //Set member level by adding their ID to the  levels_members table
+      //This must run after HouseholdService.insertMember, because we need the new member Id.
+      await HouseholdsService.setMemberLevel(
+        req.app.get('db'),
+        member.id
+      )
+
       res
         .status(201)
         .location(path.posix.join(req.originalUrl, `/${member.id}`))
@@ -413,11 +420,31 @@ householdsRouter
       .catch(next);
   });
 
-//update member level test
+//GET gets the members current level information
+//Post: Adds points and  updates levels/badges
 householdsRouter
-  //require auth later
-  .post('/household/test', jsonBodyParser, async (req, res, next) => {
-    const { points, member_id } = req.body;
+  .route('/household/test')
+  .all(requireMemberAuth)
+  .get(async (req, res, next) => {
+    const member_id = req.member.id
+
+    try {
+      const userScores = await HouseholdsService.getLevels(
+        req.app.get('db'),
+        member_id
+      )
+
+      //show distance to next level
+      userScores.nextLevel = (userScores.level_id *10 - userScores.total_score)
+
+      res.status(201).send(userScores)
+    } catch(error) {
+      next(error)
+    }
+  })
+  .post(jsonBodyParser, async (req, res, next) => {
+    const { points } = req.body;
+    const member_id = req.member.id;
 
     try {
       //get the member's current points/level info
@@ -426,15 +453,16 @@ householdsRouter
         member_id
       );
 
+
       let { total_score, level_id } = userScores;
       let newScore = total_score + points;
       let newLevel = level_id;
 
-      if (newScore > level_id * 10) {
+      if (newScore >= level_id * 10) {
         newLevel = level_id + 1;
       }
 
-      if (newLevel > 6) {
+      if (newLevel > 10) {
         await HouseholdsService.updatePoints(
           req.app.get('db'),
           member_id,
@@ -453,21 +481,12 @@ householdsRouter
           newScore
         );
       }
-      
-     
-      // if (newScore <= level_id * 10 || level_id === 6)
-      //   console.log('we are here')
-      //   await HouseholdsService.updatePoints(
-      //     req.app.get('db'),
-      //     member_id,
-      //     newScore
-      //   );
 
       res.status(200).json({
         level_id: newLevel,
         name: userScores.name,
         total_score: newScore,
-        badge: userScores.badge
+        badge: userScores.badge,
       });
     } catch (error) {
       next(error);

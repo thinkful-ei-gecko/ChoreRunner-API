@@ -160,6 +160,7 @@ const HouseholdsService = {
   },
 
   getLevels(db, member_id) {
+    console.log('getting levels', member_id);
     return db
       .select(
         'levels_members.level_id',
@@ -180,6 +181,16 @@ const HouseholdsService = {
       .first();
   },
 
+  //USE THIS TO START THE MEMBER AT LEVEL 1 WHEN CREATING MEMBER
+  //MUST RUN AFTER INSERT MEMBER.
+  setMemberLevel(db, member_id) {
+    return db
+      .insert([{ level_id: 1, member_id: member_id }])
+      .into('levels_members')
+      .returning('*')
+      .then(([member]) => member);
+  },
+
   //test update level for user
   updateLevel(db, member_id, newLevel) {
     return db('levels_members')
@@ -195,10 +206,3 @@ const HouseholdsService = {
 };
 
 module.exports = HouseholdsService;
-// completeTask(db, member_id, household_id, taskId) {
-//   return db('tasks')
-//     .where('tasks.member_id', member_id)
-//     .andWhere('tasks.household_id', household_id)
-//     .andWhere('tasks.id', taskId)
-//     .update('status', 'completed');
-// },
