@@ -38,7 +38,7 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', {member_id: 'members.id'}, 'title', 'points', 'name', 'username')
+      .select('tasks.id', { member_id: 'members.id' }, 'title', 'points', 'name', 'username')
       .from('tasks')
       .rightJoin('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
@@ -82,6 +82,13 @@ const HouseholdsService = {
       .select('*')
       .from('members')
       .where('household_id', id);
+  },
+  getMemberById(db, id) {
+    return db
+      .select('*')
+      .from('members')
+      .where({ id })
+      .first();
   },
   hasMemberwithMemberName(db, username) {
     return db('members')

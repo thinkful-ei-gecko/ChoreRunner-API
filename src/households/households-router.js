@@ -334,12 +334,15 @@ householdsRouter
 
     try {
       //check to see that updated userName isn't a duplicate
+      
+      const userData = await HouseholdsService.getMemberById(req.app.get('db'), memberId)
+
       const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
         req.app.get('db'),
         username
       );
 
-      if (hasMemberwithMemberName) {
+      if (username !== userData.username && hasMemberwithMemberName) {
         return res.status(400).json({ error: `Username already taken.` });
       }
 
