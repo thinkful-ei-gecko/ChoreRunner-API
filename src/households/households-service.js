@@ -187,7 +187,8 @@ const HouseholdsService = {
     return db
       .select('members.id', 'members.name', 'members.total_score')
       .from('members')
-      .where('members.household_id', household_id);
+      .where('members.household_id', household_id)
+      .orderBy('members.total_score', 'desc');
   },
 
   getLevels(db, member_id) {

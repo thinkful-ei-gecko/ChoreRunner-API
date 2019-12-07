@@ -435,9 +435,6 @@ householdsRouter
   .route('/household/scores')
   .all(requireMemberAuth)
   .get((req, res, next) => {
-    console.log('in the route');
-    console.log(req.member.household_id);
-    console.log(req.member);
     HouseholdsService.getHouseholdScores(
       req.app.get('db'),
       req.member.household_id
@@ -457,7 +454,7 @@ householdsRouter
 
   //The get requires member auth because it uses the token from the logged in member.
   //This get grabs information for the currently logged in  member.
-  .get(async (req, res, next) => {
+  .get(requireMemberAuth, async (req, res, next) => {
     const member_id = req.member.id;
     try {
       const userScores = await HouseholdsService.getLevels(
@@ -466,7 +463,8 @@ householdsRouter
       );
 
       //show distance to next level
-      userScores.nextLevel = userScores.level_id * 10 - userScores.total_score;
+      console.log(userScores)
+      userScores.nextLevel = (userScores.level_id * 10) - (userScores.total_score);
 
       res.status(201).send(userScores);
     } catch (error) {
@@ -474,12 +472,12 @@ householdsRouter
     }
   })
   .post(jsonBodyParser, async (req, res, next) => {
-    const { newStatus, points, member_id, taskId } = req.body;
-      console.log(newStatus, points, member_id, taskId)
+    const {  points, member_id} = req.body;
+      console.log( points, member_id)
     
     try {
-      // //This handles returned tasks for diaspproval and kicks it
-      //back to the child/member
+      //This handles returned tasks for diaspproval and kicks it
+      // back to the child/member
       if (newStatus === 'assigned') {
         const task = await HouseholdsService.parentReassignTaskStatus(
           req.app.get('db'),
@@ -488,7 +486,7 @@ householdsRouter
         );
         return res.status(201).json(task);
       }
-      // //Handles Approval, dont touch. Need the delete.
+      //Handles Approval, dont touch. Need the delete.
       if (newStatus === 'approved') {
         await HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId);
       }
