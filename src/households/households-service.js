@@ -21,6 +21,12 @@ const HouseholdsService = {
       .into('tasks')
       .returning('*');
   },
+  getAllMembersAllHouseholds(db, user_id) {
+    return db
+      .select('*')
+      .from('members')
+      .where('user_id', user_id);
+  },
   getMemberTasks(db, householdId, memberId) {
     return db
       .select('tasks.id', 'tasks.title', 'tasks.points', 'status')

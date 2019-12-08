@@ -79,6 +79,34 @@ householdsRouter
 //   });
 
 householdsRouter
+  .route('/members')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const user_id = req.user.id;
+    return (
+      HouseholdsService.getAllMembersAllHouseholds(req.app.get('db'), user_id)
+      .then(members => {
+        const result = {};
+        members.forEach(member => {
+          if (member.household_id in result) {
+            result[member.household_id].members.push({
+              name: member.name,
+              id: member.id,
+            });
+          } else {
+            result[member.household_id] = {
+              household_id: member.household_id,
+              members: [{ name: member.name, id: member.id }],
+            };
+          }
+        });
+        return res.json(result);
+      })
+        .catch(next)
+    );
+  })
+
+householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
