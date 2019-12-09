@@ -47,6 +47,7 @@ membersAuthRouter
       }
       res.send({
         authToken: membersAuthService.createJwt(sub, payload),
+        type: 'member'
       })
     } catch (error) {
       next(error)

@@ -473,7 +473,7 @@ householdsRouter
     }
   })
   .post(jsonBodyParser, async (req, res, next) => {
-    const { points, member_id } = req.body;
+    // const { points, member_id } = req.body;
 
     
     //This handles returned tasks for diaspproval. DONT TOUCH.
