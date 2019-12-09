@@ -502,7 +502,7 @@ householdsRouter
   .post(jsonBodyParser, async (req, res, next) => {
     const {  points, member_id} = req.body;
       console.log( points, member_id)
-    
+  
     try {
       //This handles returned tasks for diaspproval and kicks it
       // back to the child/member
