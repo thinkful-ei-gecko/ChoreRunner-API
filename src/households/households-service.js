@@ -21,6 +21,12 @@ const HouseholdsService = {
       .into('tasks')
       .returning('*');
   },
+  getAllMembersAllHouseholds(db, user_id) {
+    return db
+      .select('*')
+      .from('members')
+      .where('user_id', user_id);
+  },
   getMemberTasks(db, householdId, memberId) {
     return db
       .select('tasks.id', 'tasks.title', 'tasks.points', 'status')
@@ -38,7 +44,14 @@ const HouseholdsService = {
   },
   getTasksForAll(db, household_id) {
     return db
-      .select('tasks.id', { member_id: 'members.id' }, 'title', 'points', 'name', 'username')
+      .select(
+        'tasks.id',
+        { member_id: 'members.id' },
+        'title',
+        'points',
+        'name',
+        'username'
+      )
       .from('tasks')
       .rightJoin('members', 'members.id', 'tasks.member_id')
       .where('members.household_id', household_id);
@@ -50,6 +63,7 @@ const HouseholdsService = {
       .where('household_id', household_id)
       .andWhere('status', status);
   },
+
   parentReassignTaskStatus(db, taskId, newStatus) {
     return db('tasks')
       .where('id', taskId)
@@ -58,24 +72,14 @@ const HouseholdsService = {
       })
       .returning('*');
   },
-  parentApproveTaskStatus(db, taskId, points, memberId) {
-    return db('members')
-      .select('total_score')
-      .where('id', memberId)
-      .then(total => {
-        const currentTotal = total[0].total_score;
-        return db('members')
-          .where('id', memberId)
-          .update({
-            total_score: currentTotal + points
-          })
-      })
-      .then(() => {
-        return db('tasks')
-          .where('id', taskId)
-          .delete()
-          .returning('*');
-      })
+
+  //Daniel: Changed to just update and delete task since we have
+  //method for update points already in endpoint.
+  parentApproveTaskStatus(db, taskId) {
+    return db('tasks')
+      .where('id', taskId)
+      .delete()
+      .returning('*');
   },
   getAllMembers(db, id) {
     return db
@@ -177,21 +181,20 @@ const HouseholdsService = {
       .update(newHousehold);
   },
 
-
   getById(db, householdId) {
     return db
       .from('households')
       .where('id', householdId)
-      .first()
+      .first();
   },
-
 
   //To get scores for the leaderboard
   getHouseholdScores(db, household_id) {
     return db
       .select('members.id', 'members.name', 'members.total_score')
       .from('members')
-      .where('members.household_id', household_id);
+      .where('members.household_id', household_id)
+      .orderBy('members.total_score', 'desc');
   },
 
   getLevels(db, member_id) {

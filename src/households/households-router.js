@@ -79,6 +79,34 @@ householdsRouter
 //   });
 
 householdsRouter
+  .route('/members')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const user_id = req.user.id;
+    return (
+      HouseholdsService.getAllMembersAllHouseholds(req.app.get('db'), user_id)
+      .then(members => {
+        const result = {};
+        members.forEach(member => {
+          if (member.household_id in result) {
+            result[member.household_id].members.push({
+              name: member.name,
+              id: member.id,
+            });
+          } else {
+            result[member.household_id] = {
+              household_id: member.household_id,
+              members: [{ name: member.name, id: member.id }],
+            };
+          }
+        });
+        return res.json(result);
+      })
+        .catch(next)
+    );
+  })
+
+householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
@@ -210,7 +238,6 @@ householdsRouter
 //     }
 //   })
 
-
 householdsRouter
   .route('/:householdId/tasks/:taskId')
   .all(requireAuth)
@@ -312,10 +339,7 @@ householdsRouter
 
       //Set member level by adding their ID to the  levels_members table
       //This must run after HouseholdService.insertMember, because we need the new member Id.
-      await HouseholdsService.setMemberLevel(
-        req.app.get('db'),
-        member.id
-      )
+      await HouseholdsService.setMemberLevel(req.app.get('db'), member.id);
 
       res
         .status(201)
@@ -346,8 +370,11 @@ householdsRouter
 
     try {
       //check to see that updated userName isn't a duplicate
-      
-      const userData = await HouseholdsService.getMemberById(req.app.get('db'), memberId)
+
+      const userData = await HouseholdsService.getMemberById(
+        req.app.get('db'),
+        memberId
+      );
 
       const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
         req.app.get('db'),
@@ -436,9 +463,6 @@ householdsRouter
   .route('/household/scores')
   .all(requireMemberAuth)
   .get((req, res, next) => {
-    console.log('in the route');
-    console.log(req.member.household_id);
-    console.log(req.member);
     HouseholdsService.getHouseholdScores(
       req.app.get('db'),
       req.member.household_id
@@ -454,54 +478,52 @@ householdsRouter
 //Post: Adds points and  updates levels/badges
 householdsRouter
   .route('/household/test')
-  .all(requireMemberAuth)
-  .get(async (req, res, next) => {
-    const member_id = req.member.id
+  // .all(requireMemberAuth)
 
+  //The get requires member auth because it uses the token from the logged in member.
+  //This get grabs information for the currently logged in  member.
+  .get(requireMemberAuth, async (req, res, next) => {
+    const member_id = req.member.id;
     try {
-      const userScores = await HouseholdsService.getLevels(
-        req.app.get('db'),
-        member_id
-      )
-
-      //show distance to next level
-      userScores.nextLevel = (userScores.level_id *10 - userScores.total_score)
-
-      res.status(201).send(userScores)
-    } catch(error) {
-      next(error)
-    }
-  })
-  .post(jsonBodyParser, async (req, res, next) => {
-    // const { points, member_id } = req.body;
-
-    
-    //This handles returned tasks for diaspproval. DONT TOUCH.
-    const { newStatus, points, memberId } = req.body;
-    if (newStatus === 'assigned') {
-      HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
-    }
-
-    //Handles Approval, dont touch. Need the delete.
-    if (newStatus === 'approved') {
-      HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
-    }
-
-    try {
-      //get the member's current points/level info
       const userScores = await HouseholdsService.getLevels(
         req.app.get('db'),
         member_id
       );
 
+      //show distance to next level
+      console.log(userScores)
+      userScores.nextLevel = (userScores.level_id * 10) - (userScores.total_score);
+
+      res.status(201).send(userScores);
+    } catch (error) {
+      next(error);
+    }
+  })
+  .post(jsonBodyParser, async (req, res, next) => {
+    const {  points, member_id} = req.body;
+      console.log( points, member_id)
+  
+    try {
+      //This handles returned tasks for diaspproval and kicks it
+      // back to the child/member
+      if (newStatus === 'assigned') {
+        const task = await HouseholdsService.parentReassignTaskStatus(
+          req.app.get('db'),
+          taskId,
+          newStatus
+        );
+        return res.status(201).json(task);
+      }
+      //Handles Approval, dont touch. Need the delete.
+      if (newStatus === 'approved') {
+        await HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId);
+      }
+      
+      //get the member's current points/level info
+      const userScores = await HouseholdsService.getLevels(
+        req.app.get('db'),
+        member_id
+      );
 
       let { total_score, level_id } = userScores;
       let newScore = total_score + points;
@@ -530,7 +552,7 @@ householdsRouter
           newScore
         );
       }
-
+      
       res.status(200).json({
         level_id: newLevel,
         name: userScores.name,
@@ -551,24 +573,24 @@ householdsRouter
 //     "badge": "badge1"
 // }
 
-  async function checkHouseholdExists(req, res, next) {
-    try {
-      const household = await HouseholdsService.getById(
-        req.app.get('db'),
-        req.params.householdId
-      )
-  
-      if (!household) {
-        return res.status(404).json({
-          error: `Household doesn't exist`
-        })
-      }
-  
-      res.household = household
-      next()
-    } catch (error) {
-      next(error)
+async function checkHouseholdExists(req, res, next) {
+  try {
+    const household = await HouseholdsService.getById(
+      req.app.get('db'),
+      req.params.householdId
+    );
+
+    if (!household) {
+      return res.status(404).json({
+        error: `Household doesn't exist`,
+      });
     }
+
+    res.household = household;
+    next();
+  } catch (error) {
+    next(error);
   }
+}
 
 module.exports = householdsRouter;
