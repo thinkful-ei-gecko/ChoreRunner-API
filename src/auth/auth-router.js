@@ -37,7 +37,7 @@ authRouter
 
       if (!compareMatch)
         return res.status(400).json({
-          error: 'Incorrect username or password',
+          error: 'Incorrect password',
         })
 
       const sub = dbUser.username
