@@ -477,13 +477,14 @@ householdsRouter
 //GET gets the members current level information
 //Post: Adds points and  updates levels/badges
 householdsRouter
-  .route('/household/test')
+  .route('/:householdId/tasks/status/:taskId')
   // .all(requireMemberAuth)
 
   //The get requires member auth because it uses the token from the logged in member.
   //This get grabs information for the currently logged in  member.
   .get(requireMemberAuth, async (req, res, next) => {
     const member_id = req.member.id;
+  
     try {
       const userScores = await HouseholdsService.getLevels(
         req.app.get('db'),
@@ -499,9 +500,10 @@ householdsRouter
       next(error);
     }
   })
-  .post(jsonBodyParser, async (req, res, next) => {
-    const {  points, member_id} = req.body;
-      console.log( points, member_id)
+  .patch(jsonBodyParser, async (req, res, next) => {
+    const {  points, memberId, newStatus} = req.body;
+    const { taskId } = req.params
+    console.log( points, memberId, newStatus, taskId)
   
     try {
       //This handles returned tasks for diaspproval and kicks it
@@ -522,7 +524,7 @@ householdsRouter
       //get the member's current points/level info
       const userScores = await HouseholdsService.getLevels(
         req.app.get('db'),
-        member_id
+        memberId
       );
 
       let { total_score, level_id } = userScores;
@@ -536,19 +538,19 @@ householdsRouter
       if (newLevel > 10) {
         await HouseholdsService.updatePoints(
           req.app.get('db'),
-          member_id,
+          memberId,
           newScore
         );
       } else {
         await HouseholdsService.updateLevel(
           req.app.get('db'),
-          member_id,
+          memberId,
           newLevel
         );
 
         await HouseholdsService.updatePoints(
           req.app.get('db'),
-          member_id,
+          memberId,
           newScore
         );
       }
@@ -558,6 +560,7 @@ householdsRouter
         name: userScores.name,
         total_score: newScore,
         badge: userScores.badge,
+        taskId,
       });
     } catch (error) {
       next(error);
