@@ -3,6 +3,7 @@ const path = require('path');
 const { requireAuth } = require('../middleware/jwt-auth');
 const HouseholdsService = require('./households-service');
 const { requireMemberAuth } = require('../middleware/member-jwt');
+const MembersService = require('../members/members-service')
 const xss = require('xss');
 
 // const shortid = require('shortid');
@@ -309,11 +310,11 @@ householdsRouter
         });
 
     try {
-      // const passwordError = MembersService.validatePassword(password)
+      const passwordError = MembersService.validatePassword(password)
 
-      // if (passwordError)
-      //   return res.status(400).json({ error: passwordError })
-
+      if (passwordError)
+        return res.status(400).json({ error: passwordError })
+      
       const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
         req.app.get('db'),
         username
