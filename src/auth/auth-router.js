@@ -8,8 +8,10 @@ const jsonBodyParser = express.json();
 authRouter
   .route('/token')
   .post(jsonBodyParser, async (req, res, next) => {
-    const { username, password } = req.body;
-    const loginUser = { username, password };
+    const { username, password, type } = req.body
+
+    console.log('TYPE OF LOGIN',type)
+    const loginUser = { username, password }
 
     for (const [key, value] of Object.entries(loginUser))
       if (value == null)
@@ -42,10 +44,12 @@ authRouter
       const payload = {
         user_id: dbUser.id,
         name: dbUser.name,
-      };
+        type: 'user'
+      }
       res.send({
         authToken: AuthService.createJwt(sub, payload),
-      });
+        type: 'user'
+      })
     } catch (error) {
       next(error);
     }

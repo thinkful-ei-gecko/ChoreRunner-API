@@ -26,7 +26,7 @@ householdsRouter
       //use short id to generate house code
       // let house_code = `${name}` + shortid.generate();
       const newHousehold = {
-        name: xss,
+        name: xss(name),
         user_id,
       };
 
@@ -36,7 +36,7 @@ householdsRouter
       );
 
       res.status(201).json({
-        user: house.user_id,
+        user_id: house.user_id,
         id: house.id,
         name: xss(house.name),
         // code: house.house_code,
@@ -79,6 +79,35 @@ householdsRouter
 //   });
 
 householdsRouter
+  .route('/members')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    const user_id = req.user.id;
+    return HouseholdsService.getAllMembersAllHouseholds(
+      req.app.get('db'),
+      user_id
+    )
+      .then(members => {
+        const result = {};
+        members.forEach(member => {
+          if (member.household_id in result) {
+            result[member.household_id].members.push({
+              name: member.name,
+              id: member.id,
+            });
+          } else {
+            result[member.household_id] = {
+              household_id: member.household_id,
+              members: [{ name: member.name, id: member.id }],
+            };
+          }
+        });
+        return res.json(result);
+      })
+      .catch(next);
+  });
+
+householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
@@ -104,7 +133,10 @@ householdsRouter
 
     HouseholdsService.insertTask(req.app.get('db'), newTask)
       .then(result => {
-        res.status(201).json(result[0]);
+        res
+          .status(201)
+          .location(`/api/households/${newTask.user_id}/tasks`)
+          .json(result[0]);
       })
       .catch(next);
   })
@@ -118,7 +150,7 @@ householdsRouter
         tasks.forEach(task => {
           if (task.member_id in result) {
             result[task.member_id].tasks.push({
-              title: xss(task.title),
+              title: task.title,
               id: task.id,
               points: task.points,
             });
@@ -181,30 +213,31 @@ householdsRouter
     }
   });
 
-householdsRouter
-  .route('/:householdId/tasks/status/:taskId')
-  .all(requireAuth)
-  .patch(jsonBodyParser, (req, res, next) => {
-    const { taskId } = req.params;
+// householdsRouter
+//   .route('/:householdId/tasks/status/:taskId')
+//   .all(requireAuth)
+//   .patch(jsonBodyParser, (req, res, next) => {
+//     const { taskId } = req.params;
 
-    const { newStatus, points, memberId } = req.body;
-    if (newStatus === 'assigned') {
-      HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
+//     //This handles returned tasks for diaspproval. DONT TOUCH.
+//     const { newStatus, points, memberId } = req.body;
+//     if (newStatus === 'assigned') {
+//       HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
+//       .then(task => {
+//         return res.json(task);
+//       })
+//       .catch(next);
+//     }
 
-    }
-    if (newStatus === 'approved') {
-      HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
-      .then(task => {
-        return res.json(task);
-      })
-      .catch(next);
-    }
-  })
-
+//     //Handles Approval, dont touch. Need the delete.
+//     if (newStatus === 'approved') {
+//       HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
+//       .then(task => {
+//         return res.json(task);
+//       })
+//       .catch(next);
+//     }
+//   })
 
 householdsRouter
   .route('/:householdId/tasks/:taskId')
@@ -305,6 +338,10 @@ householdsRouter
         newMember
       );
 
+      //Set member level by adding their ID to the  levels_members table
+      //This must run after HouseholdService.insertMember, because we need the new member Id.
+      await HouseholdsService.setMemberLevel(req.app.get('db'), member.id);
+
       res
         .status(201)
         .location(path.posix.join(req.originalUrl, `/${member.id}`))
@@ -334,12 +371,18 @@ householdsRouter
 
     try {
       //check to see that updated userName isn't a duplicate
+
+      const userData = await HouseholdsService.getMemberById(
+        req.app.get('db'),
+        memberId
+      );
+
       const hasMemberwithMemberName = await HouseholdsService.hasMemberwithMemberName(
         req.app.get('db'),
         username
       );
 
-      if (hasMemberwithMemberName) {
+      if (username !== userData.username && hasMemberwithMemberName) {
         return res.status(400).json({ error: `Username already taken.` });
       }
 
@@ -371,12 +414,12 @@ householdsRouter
   });
 
 householdsRouter
-  .route('/:id')
+  .route('/:householdId')
   .all(requireAuth)
   .all(checkHouseholdExists)
   .get((req, res, next) => {
-    const { id } = req.params;
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), id)
+    const { householdId } = req.params;
+    return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
       .then(households => {
         return res.json(households);
       })
@@ -387,9 +430,9 @@ householdsRouter
   // })
   .delete(jsonBodyParser, (req, res, next) => {
     console.log('in delete');
-    const { id } = req.params;
+    const { householdId } = req.params;
 
-    HouseholdsService.deleteHousehold(req.app.get('db'), id)
+    HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
       .then(() => {
         res.status(204).end();
       })
@@ -397,7 +440,7 @@ householdsRouter
   })
   .patch(jsonBodyParser, (req, res, next) => {
     let user_id = req.user.id;
-    const { id } = req.params;
+    const { householdId } = req.params;
     const { name } = req.body;
     const newHousehold = { name };
     const db = req.app.get('db');
@@ -410,7 +453,7 @@ householdsRouter
         },
       });
     }
-    HouseholdsService.updateHouseholdName(db, id, newHousehold)
+    HouseholdsService.updateHouseholdName(db, householdId, newHousehold)
       .then(() => HouseholdsService.getAllHouseholds(db, user_id))
       .then(result => res.json(result))
       .catch(next);
@@ -419,11 +462,7 @@ householdsRouter
 householdsRouter
   //houshold added due to odd conflict with route ':/householdId'
   .route('/household/scores')
-  .all(requireMemberAuth)
-  .get((req, res, next) => {
-    console.log('in the route');
-    console.log(req.member.household_id);
-    console.log(req.member);
+  .get(requireMemberAuth, (req, res, next) => {
     HouseholdsService.getHouseholdScores(
       req.app.get('db'),
       req.member.household_id
@@ -433,63 +472,128 @@ householdsRouter
         res.status(201).json(result);
       })
       .catch(next);
-  });
-
-//update member level test
-householdsRouter
-  //require auth later
-  .post('/household/test', jsonBodyParser, async (req, res, next) => {
-    const { points, member_id } = req.body;
+  })
+  //adding a reset button route. Chose to take the household_id from the req body.
+  .patch(requireAuth, jsonBodyParser, async (req, res, next) => {
+    console.log(
+      'WE ARE IN THE ROUTE AND THIS IS THE ID',
+      req.body.household_id
+    );
+    let { household_id } = req.body;
+    console.log(household_id);
 
     try {
-      //get the member's current points/level info
+      await HouseholdsService.resetHouseholdScores(
+        req.app.get('db'),
+        household_id
+      );
+
+      await HouseholdsService.resetHouseholdLevels(
+        req.app.get('db'),
+        household_id
+      );
+
+      const newScores = await HouseholdsService.getHouseholdScores(
+        req.app.get('db'),
+        household_id
+      );
+      console.log('these are the new scores', newScores);
+      res.status(201).json(newScores);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+//GET gets the members current level information
+//Post: Adds points and  updates levels/badges
+householdsRouter
+  .route('/:householdId/tasks/status/:taskId')
+  // .all(requireMemberAuth)
+
+  //The get requires member auth because it uses the token from the logged in member.
+  //This get grabs information for the currently logged in  member.
+  .get(requireMemberAuth, async (req, res, next) => {
+    const member_id = req.member.id;
+
+    try {
       const userScores = await HouseholdsService.getLevels(
         req.app.get('db'),
         member_id
+      );
+
+      //show distance to next level
+      console.log(userScores);
+      userScores.nextLevel = userScores.level_id * 10 - userScores.total_score;
+
+      res.status(201).send(userScores);
+    } catch (error) {
+      next(error);
+    }
+  })
+  .patch(jsonBodyParser, async (req, res, next) => {
+    const { points, memberId, newStatus } = req.body;
+    const { taskId } = req.params;
+    console.log(points, memberId, newStatus, taskId);
+
+    try {
+      //This handles returned tasks for diaspproval and kicks it
+      // back to the child/member
+      if (newStatus === 'assigned') {
+        const task = await HouseholdsService.parentReassignTaskStatus(
+          req.app.get('db'),
+          taskId,
+          newStatus
+        );
+        return res.status(201).json(task);
+      }
+      //Handles Approval, dont touch. Need the delete.
+      if (newStatus === 'approved') {
+        await HouseholdsService.parentApproveTaskStatus(
+          req.app.get('db'),
+          taskId
+        );
+      }
+
+      //get the member's current points/level info
+      const userScores = await HouseholdsService.getLevels(
+        req.app.get('db'),
+        memberId
       );
 
       let { total_score, level_id } = userScores;
       let newScore = total_score + points;
       let newLevel = level_id;
 
-      if (newScore > level_id * 10) {
+      if (newScore >= level_id * 10) {
         newLevel = level_id + 1;
       }
 
-      if (newLevel > 6) {
+      if (newLevel > 10) {
         await HouseholdsService.updatePoints(
           req.app.get('db'),
-          member_id,
+          memberId,
           newScore
         );
       } else {
         await HouseholdsService.updateLevel(
           req.app.get('db'),
-          member_id,
+          memberId,
           newLevel
         );
 
         await HouseholdsService.updatePoints(
           req.app.get('db'),
-          member_id,
+          memberId,
           newScore
         );
       }
-      
-     
-      // if (newScore <= level_id * 10 || level_id === 6)
-      //   console.log('we are here')
-      //   await HouseholdsService.updatePoints(
-      //     req.app.get('db'),
-      //     member_id,
-      //     newScore
-      //   );
 
       res.status(200).json({
         level_id: newLevel,
         name: userScores.name,
         total_score: newScore,
-        badge: userScores.badge
+        badge: userScores.badge,
+        taskId,
       });
     } catch (error) {
       next(error);
@@ -505,24 +609,24 @@ householdsRouter
 //     "badge": "badge1"
 // }
 
-  async function checkHouseholdExists(req, res, next) {
-    try {
-      const household = await HouseholdsService.getById(
-        req.app.get('db'),
-        req.params.id
-      )
-  
-      if (!household) {
-        return res.status(404).json({
-          error: `Household doesn't exist`
-        })
-      }
-  
-      res.household = household
-      next()
-    } catch (error) {
-      next(error)
+async function checkHouseholdExists(req, res, next) {
+  try {
+    const household = await HouseholdsService.getById(
+      req.app.get('db'),
+      req.params.householdId
+    );
+
+    if (!household) {
+      return res.status(404).json({
+        error: `Household doesn't exist`,
+      });
     }
+
+    res.household = household;
+    next();
+  } catch (error) {
+    next(error);
   }
+}
 
 module.exports = householdsRouter;

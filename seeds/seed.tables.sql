@@ -2,6 +2,8 @@ BEGIN;
 
 TRUNCATE
   "tasks",
+  "levels_members",
+  "levels",
   "members",
   "households",
   "users";
@@ -35,11 +37,25 @@ VALUES
   (2, 'task2', 1, 1, 2, 10, 'completed'),
   (3, 'task3', 1, 1, 2, 7, 'approved');
 
+INSERT INTO "levels"("id", "badge")
+VALUES
+  (1, 'Badge1'),
+  (2, 'Badge2'),
+  (3, 'Badge3'),
+  (4, 'Badge4'),
+  (5, 'Badge5'),
+  (6, 'Badge6'),
+  (7, 'Badge7'),
+  (8, 'Badge8'),
+  (9, 'Badge9'),
+  (10, 'Badge10');
+
   --update the sequence
 SELECT setval('tasks_id_seq', (SELECT MAX(id) from "tasks"));
 SELECT setval('members_id_seq', (SELECT MAX(id) from "members"));
 SELECT setval('households_id_seq', (SELECT MAX(id) from "households"));
 SELECT setval('users_id_seq', (SELECT MAX(id) from "users"));
+SELECT setval('levels_id_seq', (SELECT MAX(id) from "levels"));
 
 
 COMMIT;

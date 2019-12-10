@@ -42,10 +42,12 @@ membersAuthRouter
       const payload = {
         user_id: dbMember.id,
         name: dbMember.name,
-        household_id: dbMember.household_id
+        household_id: dbMember.household_id,
+        type: 'member'
       }
       res.send({
         authToken: membersAuthService.createJwt(sub, payload),
+        type: 'member'
       })
     } catch (error) {
       next(error)
