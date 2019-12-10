@@ -1,36 +1,21 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-// function makeUser(id, name, username, password) {
-//   return {
-//     id,
-//     name,
-//     username,
-//     password
-//   }
-// }
 
 // function makeUsersArray(num = 4) {
 //   let arr = []
 //   for (let i = 0; i <= num; i++) {
-//     arr = [...arr, makeUser(i, `test-user-${i}`, `test-username-${i}`, 'Password123!')]
+//     arr = [
+//       ...arr,
+//       {
+//         id: i,
+//         name: `test-user-${i}`,
+//         username: `test-username-${i}`,
+//         password: 'Password123!'
+//       }
+//     ]
 //   }
 //   return arr
-// }
-
-// function makeHousehold(id, name, user_id) {
-//   return {
-//     id,
-//     name,
-//     user_id
-//   }
-// }
-
-// function makeHouseholdArray(user_id, num = 4) {
-//   let arr = []
-//   for (let i = 0; i <= num; i++) {
-//     arr = [...arr, makeHousehold(i, )]
-//   }
 // }
 
 function makeUsersArray() {
@@ -87,7 +72,6 @@ function makeHouseholdsArray(users) {
   ]
 }
 
-// Household members?
 function makeMembersArray() {
   return [
     {
@@ -170,20 +154,6 @@ function makeTasksArray() {
   ]
 }
 
-function seedUsers(db, users) {
-  const preppedUsers = users.map(user => ({
-    ...user,
-    password: bcrypt.hashSync(user.password, 1)
-  }))
-  return db.into('users').insert(preppedUsers)
-    .then(() =>
-      // update the auto sequence to stay in sync
-      db.raw(
-        `SELECT setval('users_id_seq', ?)`,
-        [users[users.length - 1].id],
-      )
-    )
-}
 
 function makeExpectedHousehold(users, household) {
   const user = users.find(user => user.id === household.user_id);
@@ -199,9 +169,9 @@ function makeExpectedHousehold(users, household) {
 function makeExpectedHouseholdTask(users, householdId, tasks) {
   const expectedTasks = tasks
     .filter(task => task.id === householdId)
-  
+
   return expectedTasks.map(task => {
-    const userTask = users.find(user => user.id === task.user_id)
+    const userTask = users.find(user => user.id === task.user_id);
     return {
       id: task.id,
       title: task.title,
@@ -214,27 +184,62 @@ function makeExpectedHouseholdTask(users, householdId, tasks) {
   })
 }
 
-// function makeExpectedEntry(users, entry) {
-//   const user = users
-//     .find(user => user.id === entry.user_id)
-//   return {
-//     id: entry.id,
-//     title: entry.title,
-//     content: entry.content,
-//     duration: entry.duration,
-//     mood_type: entry.mood_type,
-//     date_created: entry.date_created,
-//     user: {
-//       id: user.id,
-//       user_name: user.user_name,
-//       full_name: user.full_name,
-//       nickname: user.nickname,
-//       date_created: user.date_created,
-//     },
-//   }
-// }
+/* -- Seeding -- */
 
-function seedChoresTables(db, users, households = [], members = [], tasks = []) {
+function seedUsers(db, users) {
+  const preppedUsers = users.map(user => ({
+    ...user,
+    password: bcrypt.hashSync(user.password, 1)
+  }))
+  return db.into('users').insert(preppedUsers)
+    .then(() =>
+      // update the auto sequence to stay in sync
+      db.raw(
+        `SELECT setval('users_id_seq', ?)`,
+        [users[users.length - 1].id],
+      )
+    )
+}
+
+function seedHouseholds(db, users, households) {
+  return db
+    .transaction(async trx => {
+      await seedUsers(trx, users)
+      await trx.into('households').insert(households)
+      await trx.raw(`SELECT setval('households_id_seq', ?)`,
+        [households[households.length - 1].id],
+      );
+    });
+}
+
+function seedMembers(db, users, households, members) {
+  return db
+    .transaction(async trx => {
+      await seedUsers(trx, users)
+      await seedHouseholds(trx, users, households)
+      await trx.into('members').insert(members)
+      await trx.raw(
+        `SELECT setval('members_id_seq', ?)`,
+        [members[members.length - 1].id]
+      )
+    })
+}
+
+function seedTasks(db, users, households, members, tasks) {
+  return db
+    .transaction(async trx => {
+      await seedUsers(trx, users)
+      await seedHouseholds(trx, users, households)
+      await seedMembers(trx, users, households, members)
+      await trx.into('tasks').insert(tasks);
+      await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
+        [tasks[tasks.length - 1].id]
+      )
+    })
+}
+
+//This was having trouble seeding the tables when missing params
+function seedChoresTables(db, users, households, members, tasks) {
   return db
     .transaction(async trx => {
       await seedUsers(trx, users)
@@ -248,17 +253,15 @@ function seedChoresTables(db, users, households = [], members = [], tasks = []) 
         `SELECT setval('members_id_seq', ?)`,
         [members[members.length - 1].id]
       )
-      if (tasks.length) {
-        await trx.into('tasks').insert(tasks);
-        await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
-          [tasks[tasks.length - 1].id]
-        )
-      }
+      await trx.into('tasks').insert(tasks);
+      await trx.raw(`SELECT setval('tasks_id_seq', ?)`,
+        [tasks[tasks.length - 1].id]
+      )
     })
 }
 
 function cleanTables(db) {
-  console.log('starting cleanup')
+  // console.log('starting cleanup')
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
@@ -270,13 +273,14 @@ function cleanTables(db) {
         RESTART IDENTITY CASCADE
       `
     )
-      .then(() => console.log('finished cleaning up')
-        // Promise.all([
-        //   trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
-        //   trx.raw(`SELECT setval('users_id_seq', 0)`),
-        // ])
-      )
-  )
+    // .then(() => {
+    //   console.log('finished cleaning up')
+    //   // Promise.all([
+    //   //   trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
+    //   //   trx.raw(`SELECT setval('users_id_seq', 0)`),
+    //   // ])
+    // })
+  );
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
@@ -287,14 +291,16 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   return `Bearer ${token}`
 }
 
+
 function makeFixtures() {
   const testUsers = makeUsersArray()
-  //TODO this relies on how the rest of the API is structured.
   const testHouseholds = makeHouseholdsArray(testUsers)
   const testMembers = makeMembersArray(testUsers, testHouseholds)
   const testTasks = makeTasksArray(testMembers)
   return { testUsers, testHouseholds, testMembers, testTasks }
 }
+
+/* ---XSS test helpers---*/
 
 function makeMaliciousHousehold(user) {
   return {
@@ -320,47 +326,86 @@ function seedMaliciousHousehold(db, user, household) {
     )
 }
 
-function makeMaliciousTask(user) {
+//Creates a malicious task and its expected outcome.
+function makeMaliciousTask(user, household, member) {
+
+  const mockTask = {
+    id: 1,
+    title: null,
+    household_id: household.id,
+    user_id: user.id,
+    member_id: member.id,
+    points: 10,
+    status: 'assigned'
+  },
+    maliciousString = 'A Foul Name <script>alert("xss");</script>',
+    expectedString = 'A Foul Name &lt;script&gt;alert("xss");&lt;/script&gt;';
+
   return {
-    maliciousTask: {
-      id: 1,
-      title: 'A Foul Name <script>alert("xss");</script>',
-      user_id: user.id,
-      points: 1,
-    },
-    expectedTask: {
-      id: 1,
-      title: 'A Foul Name &lt;script&gt;alert("xss");&lt;/script&gt;',
-      user_id: user.id,
-      points: 1,
-    }
-  }
+    maliciousTask: { ...mockTask, title: maliciousString },
+    expectedTask: { ...mockTask }
+  };
 }
 
-function seedMaliciousTask(db, user, task) {
-  return seedUsers(db, [user])
-    .then(() => {
-      db
-        .into('tasks')
-        .insert([task])
-    })
+function seedMaliciousTask(db, user, household, task) {
+  return seedChoresTables(db, [user], [household], [task])
 }
 
 module.exports = {
   cleanTables,
   seedUsers,
+  seedHouseholds,
+  seedMembers,
+  seedTasks,
   seedChoresTables,
   seedMaliciousHousehold,
   seedMaliciousTask,
 
   makeMaliciousHousehold,
   makeMaliciousTask,
-  makeFixtures,
   makeUsersArray,
   makeHouseholdsArray,
+  makeMembersArray,
+  makeTasksArray,
+  makeFixtures,
+
   makeExpectedHousehold,
   makeExpectedHouseholdTask,
-  // makeMembersArray,
-  // makeTasksArray,
   makeAuthHeader
 }
+
+
+//These null constants are for remembering/checking/using the structure of these objects.
+//For example, if you write out 'nullUser' and hover over it with ctrl,
+// you can see the structure of the user object. These should be deleted when we complete
+// this.
+
+const nullUser = {
+  id: null,
+  name: null,
+  username: null,
+  password: null
+},
+  nullHousehold = {
+    id: null,
+    name: null,
+    user_id: null
+  },
+  nullMember = {
+    id: null,
+    name: null,
+    username: null,
+    password: null,
+    user_id: null,
+    household_id: null,
+    total_score: null
+  },
+  nullTask = {
+    id: null,
+    title: null,
+    household_id: null,
+    user_id: null,
+    member_id: null,
+    points: null,
+    status: 'assigned'
+  };
