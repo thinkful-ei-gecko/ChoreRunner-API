@@ -154,13 +154,15 @@ householdsRouter
               title: task.title,
               id: task.id,
               points: task.points,
+              status: task.status
             });
           } else {
             result[task.member_id] = {
               member_id: task.member_id,
               name: task.name,
               username: task.username,
-              tasks: [{ title: task.title, id: task.id, points: task.points }],
+              total_score: task.total_score,
+              tasks: [{ title: task.title, id: task.id, points: task.points, status: task.status }],
             };
           }
         });
