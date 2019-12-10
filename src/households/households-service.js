@@ -241,6 +241,23 @@ const HouseholdsService = {
       .where('members.id', member_id)
       .update('total_score', newPoints);
   },
+
+  resetHouseholdScores(db, household_id) {
+    return db('members')
+      .where('members.household_id', household_id)
+      .update('total_score', 0);
+  },
+
+  resetHouseholdLevels(db, household_id) {
+    return db('levels_members')
+      .update({ level_id: 1 })
+      .whereIn('member_id', function() {
+        this.select('id')
+          .from('members')
+          .where('members.household_id', household_id);
+      })
+      .returning('*');
+  },
 };
 
 module.exports = HouseholdsService;
