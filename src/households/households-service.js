@@ -50,7 +50,9 @@ const HouseholdsService = {
         'title',
         'points',
         'name',
-        'username'
+        'username',
+        'total_score',
+        'status'
       )
       .from('tasks')
       .rightJoin('members', 'members.id', 'tasks.member_id')
