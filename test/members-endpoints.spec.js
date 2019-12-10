@@ -2,7 +2,29 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-describe.only(`Members Endpoints`, () => {
+/* TODO:
+ - GET members
+    - When members aren't in db
+    - When member are in db
+ - POST members
+    - Valid post data
+    - Invalid post data
+    - Malicious XSS
+ - UPDATE members
+    - Valid post update data
+    - Invalid post update data
+    - Malicious XSS
+ - DELETE members
+    - When member exists
+    - When member doesn't exist
+
+ - *BONUS A member's total score increases by a task's point value when they complete
+    a given task.
+    
+ - *BONUS A member gains a level when they accumulate enough points.
+*/
+
+describe(`Members Endpoints`, () => {
   let db;
 
   const { testUsers, testHouseholds, testMembers } = helpers.makeFixtures();
