@@ -96,7 +96,8 @@ function makeMembersArray() {
       username: 'kid1',
       password: 'kid1',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 20
     },
     {
       id: 2,
@@ -104,7 +105,8 @@ function makeMembersArray() {
       username: 'kid2',
       password: 'kid2',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 5
     },
     {
       id: 3,
@@ -112,7 +114,8 @@ function makeMembersArray() {
       username: 'kid3',
       password: 'kid3',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 30
     },
     {
       id: 4,
@@ -120,9 +123,10 @@ function makeMembersArray() {
       username: 'kid4',
       password: 'kid4',
       user_id: 1,
-      household_id: 1
+      household_id: 1,
+      total_score: 0
     },
-  ]
+  ];
 }
 
 function makeTasksArray() {
@@ -254,6 +258,7 @@ function seedChoresTables(db, users, households = [], members = [], tasks = []) 
 }
 
 function cleanTables(db) {
+  console.log('starting cleanup')
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
@@ -265,11 +270,11 @@ function cleanTables(db) {
         RESTART IDENTITY CASCADE
       `
     )
-      .then(() =>
-        Promise.all([
-          trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
-          trx.raw(`SELECT setval('users_id_seq', 0)`),
-        ])
+      .then(() => console.log('finished cleaning up')
+        // Promise.all([
+        //   trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
+        //   trx.raw(`SELECT setval('users_id_seq', 0)`),
+        // ])
       )
   )
 }
