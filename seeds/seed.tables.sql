@@ -27,10 +27,10 @@ VALUES
 --TODO hash passwords so that life is good seed works all good
 INSERT INTO "members"("id", "name", "username", "password", "user_id", "household_id", "total_score")
 VALUES
-  (1, 'kid1', 'kid1', 'kid1', 1, 1, 0),
-  (2, 'kid2', 'kid2', 'kid2', 1, 1, 0),
-  (3, 'kid3', 'kid3', 'kid3', 1, 2, 0),
-  (4, 'kid4', 'kid4', 'kid4', 1, 2, 0);
+  (1, 'kid1', 'kid1', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 1, 0),
+  (2, 'kid2', 'kid2', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 1, 0),
+  (3, 'kid3', 'kid3', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 2, 0),
+  (4, 'kid4', 'kid4', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 2, 0);
 
 INSERT INTO "tasks"("id", "title", "household_id", "user_id", "member_id", "points", "status")
 VALUES
