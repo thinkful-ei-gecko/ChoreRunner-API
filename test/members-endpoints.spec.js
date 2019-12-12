@@ -48,13 +48,16 @@ describe.only(`Members Endpoints`, () => {
   });
 
   before('cleanup', () => helpers.cleanTables(db));
-  afterEach('cleanup', () => helpers.cleanTables(db));
+  afterEach('cleanup', () => {
+    console.log('Cleanup firing, calling helper...')
+    helpers.cleanTables(db)
+      .then(() => console.log('Cleanup done, finishing!'));
+  });
   after('disconnect from db', () => db.destroy());
 
   describe(`GET api/households/:householdId/members`, () => {
 
     context(`Households do not have members`, () => {
-    
       before('insert households but not members', () => {
         helpers.seedHouseholds(db, testUsers, testHouseholds);
       });
@@ -68,12 +71,13 @@ describe.only(`Members Endpoints`, () => {
     });
 
     context(`Households have some members`, () => {
-      before('insert members', () => {
-        helpers.seedMembers(db, testUsers, testHouseholds, testMembers);
+      before('insert households and members', () => {
+        helpers.seedHouseholds(db, testUsers, testHouseholds)
+          .then(() => helpers.seedMembers(db, testMembers));
       });
 
       it(`returns with a 200 status and an array with all members of household`, () => {
-        const expectedMembers = [];
+        const expectedMembers = testMembers;
         return supertest(app)
           .get(`/api/households/${testHousehold.id}/members`)
           .set('Authorization', helpers.makeAuthHeader(testUser))

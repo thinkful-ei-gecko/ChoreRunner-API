@@ -16,13 +16,12 @@ const helpers = require('./test-helpers')
     - Invalid post update data
     - Malicious XSS
  - DELETE tasks
-    
 */
 
 //Moved logic for task testing here.
 
 describe('POST /api/households/:householdId/tasks', () => {
-  let db
+  let db;
 
   const {
     testUsers,
@@ -47,6 +46,7 @@ describe('POST /api/households/:householdId/tasks', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
   context(`Given when one request body is missing`, () => {
+
     beforeEach('insert chores', () => {
       return helpers.seedTasks(
         db,
@@ -54,8 +54,8 @@ describe('POST /api/households/:householdId/tasks', () => {
         testHouseholds,
         testMembers,
         testTasks
-      )
-    })
+      );
+    });
 
     it(`responds with 400 'Missing task name, member id or points in request body' when title missing`, () => {
       const tasksMissingTitle = {
