@@ -3,7 +3,7 @@ const app = require('../src/app')
 const jwt = require('jsonwebtoken')
 const helpers = require('./test-helpers')
 
-describe.skip('Auth Endpoints', function() {
+describe.skip('Auth Endpoints', function () {
   let db
 
   const { testUsers } = helpers.makeFixtures()
@@ -39,15 +39,15 @@ describe.skip('Auth Endpoints', function() {
         password: testUser.password,
       }
 
-    it(`responds with 400 required error when '${field}' is missing`, () => {
-      delete loginAttemptBody[field]
+      it(`responds with 400 required error when '${field}' is missing`, () => {
+        delete loginAttemptBody[field]
 
-      return supertest(app)
-        .post('/api/auth/token')
-        .send(loginAttemptBody)
-        .expect(400, {
-          error: `Missing '${field}' in request body`,
-        })
+        return supertest(app)
+          .post('/api/auth/token')
+          .send(loginAttemptBody)
+          .expect(400, {
+            error: `Missing '${field}' in request body`,
+          })
       })
     })
 

@@ -2,7 +2,22 @@ const knex = require('knex')
 const app = require('../src/app')
 const helpers = require('./test-helpers')
 
-describe('Households Endpoints', function () {
+/* TODO:
+ - GET households
+    - When households aren't in db
+    - When households are in db
+ - POST households
+    - Valid post data
+    - Invalid post data
+    - Malicious XSS
+ - UPDATE households
+    - Valid post update data
+    - Invalid post update data
+    - Malicious XSS
+ - DELETE household
+*/
+
+describe.only('Households Endpoints', function () {
   let db
 
   const {
@@ -13,6 +28,8 @@ describe('Households Endpoints', function () {
   } = helpers.makeFixtures();
 
   const testUser = testUsers[0];
+  const testMember = testMembers[0];
+  const testHousehold = testHouseholds[0];
 
   before('make knex instance', () => {
     db = knex({
@@ -28,7 +45,7 @@ describe('Households Endpoints', function () {
 
   describe(`GET api/households`, () => {
     before('seed users', () => helpers.seedUsers(db, testUsers));
-    
+
     context(`Given no households`, () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
@@ -43,13 +60,13 @@ describe('Households Endpoints', function () {
     });
     context(`Given households exist`, () => {
       beforeEach('insert households', () => {
-        helpers.seedChoresTables(
+        helpers.seedHouseholds(
           db,
           testUsers,
           testHouseholds
         );
       });
-      
+
       afterEach('cleanup', () => helpers.cleanTables(db));
 
       it(`responds with 200 and an array with all the households`, () => {
@@ -64,7 +81,7 @@ describe('Households Endpoints', function () {
     });
 
     context.skip(`Given an XSS attack household`, () => {
-      const testUser = helpers.makeUsersArray()[1]
+      const testUser = helpers.makeUsersArray()[1];
       const {
         maliciousHousehold,
         expectedHousehold,
@@ -108,7 +125,7 @@ describe('Households Endpoints', function () {
     // Seed tasks and members table when ready
     context('Given there are households in the database', () => {
       beforeEach('insert households', () =>
-        helpers.seedChoresTables(
+        helpers.seedHouseholds(
           db,
           testUsers,
           testHouseholds,
@@ -129,7 +146,7 @@ describe('Households Endpoints', function () {
       })
     })
 
-    context.skip(`Given an XSS attack household`, () => {
+    context(`Given an XSS attack household`, () => {
       const testUser = helpers.makeUsersArray()[1]
       const {
         maliciousHousehold,
@@ -158,7 +175,7 @@ describe('Households Endpoints', function () {
 
   describe(`GET /api/households/:id`, () => {
     context(`Given no household`, () => {
-      beforeEach(() => 
+      beforeEach(() =>
         helpers.seedUsers(db, testUsers)
       )
       it(`responds with 404`, () => {
@@ -179,22 +196,22 @@ describe('Households Endpoints', function () {
     //       testHouseholds,
     //     )
     //   )
-      //seed testTasks later
-      // it('responds with 200 and the specified household', () => {
-      //   const householdId = 1
-      //   const expectedHousehold = helpers.makeExpectedHousehold(
-      //     testUsers,
-      //     testHouseholds[householdId - 1],
-      //   )
+    //seed testTasks later
+    // it('responds with 200 and the specified household', () => {
+    //   const householdId = 1
+    //   const expectedHousehold = helpers.makeExpectedHousehold(
+    //     testUsers,
+    //     testHouseholds[householdId - 1],
+    //   )
 
-      //   return supertest(app)
-      //     .get(`/api/households/${householdId}`)
-      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-      //     .expect(200, expectedHousehold)
-      // })
+    //   return supertest(app)
+    //     .get(`/api/households/${householdId}`)
+    //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+    //     .expect(200, expectedHousehold)
+    // })
     // })
 
-    context.skip(`Given an XSS attack household`, () => {
+    context(`Given an XSS attack household`, () => {
       const testUser = helpers.makeUsersArray()[1]
       const {
         maliciousHousehold,
@@ -224,7 +241,7 @@ describe('Households Endpoints', function () {
   describe('POST /api/households/:householdId/tasks', () => {
     context(`Given when one request body is missing`, () => {
       beforeEach('insert chores', () => {
-        return helpers.seedChoresTables(
+        return helpers.seedTasks(
           db,
           testUsers,
           testHouseholds,
@@ -232,7 +249,7 @@ describe('Households Endpoints', function () {
           testTasks
         )
       })
-  
+
       it(`responds with 400 'Missing task name, member id or points in request body' when title missing`, () => {
         const tasksMissingTitle = {
           member_id: 1,
@@ -242,9 +259,9 @@ describe('Households Endpoints', function () {
           .post('/api/households/:id/tasks')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .send(tasksMissingTitle)
-          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+          .expect(400, { error: { message: 'Missing task name, member id or points in request body' } })
       })
-  
+
       it(`responds with 400 'Missing task name, member id or points in request body' when member_id missing`, () => {
         const tasksMissingMember = {
           title: 'title',
@@ -254,9 +271,9 @@ describe('Households Endpoints', function () {
           .post('/api/households/:id/tasks')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .send(tasksMissingMember)
-          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+          .expect(400, { error: { message: 'Missing task name, member id or points in request body' } })
       })
-  
+
       it(`responds with 400 'Missing task name, member id or points in request body' when points missing`, () => {
         const tasksMissingPoints = {
           member_id: 1,
@@ -266,13 +283,13 @@ describe('Households Endpoints', function () {
           .post('/api/households/:id/tasks')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .send(tasksMissingPoints)
-          .expect(400, {error: { message: 'Missing task name, member id or points in request body'} })
+          .expect(400, { error: { message: 'Missing task name, member id or points in request body' } })
       })
     })
-    
+
     context(`Given when we have correct values in req.body`, () => {
       beforeEach('insert chores', () => {
-        return helpers.seedChoresTables(
+        return helpers.seedTasks(
           db,
           testUsers,
           testHouseholds,
@@ -303,22 +320,25 @@ describe('Households Endpoints', function () {
       })
     })
     //AssertionError: expected undefined to deeply equal (maliciousTask.title)
-    context.only(`Given an XSS attack on household task`, () => {
-      const testUser = helpers.makeUsersArray()[0]
+    context(`Given an XSS attack on household task`, () => {
+
       const {
         maliciousTask,
         expectedTask,
-      } = helpers.makeMaliciousTask(testUser)
+      } = helpers.makeMaliciousTask(testUser, testHousehold, testMember);
 
       beforeEach('insert malicious household task', () => {
         return helpers.seedMaliciousTask(
           db,
           testUser,
+          testHousehold,
+          testMember,
           maliciousTask,
-        )
-      })
+        );
+      });
 
-      it('removes XSS attack title', () => {
+      it('removes XSS attack from title', () => {
+        
         return supertest(app)
           .get(`/api/households/${maliciousTask.id}/tasks`)
           .set('Authorization', helpers.makeAuthHeader(testUser))
