@@ -1,6 +1,6 @@
-const knex = require('knex')
-const app = require('../src/app')
-const helpers = require('./test-helpers')
+const knex = require('knex');
+const app = require('../src/app');
+const helpers = require('./test-helpers');
 
 /* TODO:
  - POST households
@@ -41,9 +41,10 @@ describe('Households Endpoints', function () {
   after('disconnect from db', () => db.destroy());
 
   describe(`GET api/households`, () => {
-    before('seed users', () => helpers.seedUsers(db, testUsers));
 
     context(`Given no households`, () => {
+
+      before('seed users', () => helpers.seedUsers(db, testUsers));
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
           .get('/api/households')
@@ -74,7 +75,7 @@ describe('Households Endpoints', function () {
           .get('/api/households')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(200, expectedHouseholds);
-      })
+      });
     });
 
     context(`Given an XSS attack household`, () => {
@@ -82,15 +83,15 @@ describe('Households Endpoints', function () {
       const {
         maliciousHousehold,
         expectedHousehold,
-      } = helpers.makeMaliciousHousehold(testUser)
+      } = helpers.makeMaliciousHousehold(testUser);
 
       beforeEach('insert malicious household', () => {
         return helpers.seedMaliciousHousehold(
           db,
           testUser,
           maliciousHousehold,
-        )
-      })
+        );
+      });
 
       it('removes XSS attack content', () => {
         return supertest(app)
@@ -98,15 +99,15 @@ describe('Households Endpoints', function () {
           .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
-            expect(res.body[0].name).to.eql(expectedHousehold.name)
-          })
-      })
-    })
+            expect(res.body[0].name).to.eql(expectedHousehold.name);
+          });
+      });
+    });
   });
 
   describe(`GET /api/households`, () => {
     context(`Given no household`, () => {
-      before('seed users', () => helpers.seedUsers(db, testUsers))
+      before('seed users', () => helpers.seedUsers(db, testUsers));
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
           .get('/api/households')
@@ -114,10 +115,10 @@ describe('Households Endpoints', function () {
           .expect(200)
           .then(res => {
             expect(res.body).to.be.an('array');
-            expect(res.body).to.eql([])
-          })
-      })
-    })
+            expect(res.body).to.eql([]);
+          });
+      });
+    });
 
     context('Given there are households in the database', () => {
       beforeEach('insert households', () =>
@@ -126,7 +127,7 @@ describe('Households Endpoints', function () {
           testUsers,
           testHouseholds,
         )
-      )
+      );
 
       it('responds with 200 and all of the households', () => {
         const expectedhouseholds = testHouseholds.map(household =>
@@ -134,28 +135,28 @@ describe('Households Endpoints', function () {
             testUsers,
             household,
           )
-        )
+        );
         return supertest(app)
           .get('/api/households')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, expectedhouseholds)
-      })
-    })
+          .expect(200, expectedhouseholds);
+      });
+    });
 
     context(`Given an XSS attack household`, () => {
-      const testUser = helpers.makeUsersArray()[1]
+      const testUser = helpers.makeUsersArray()[1];
       const {
         maliciousHousehold,
         expectedHousehold,
-      } = helpers.makeMaliciousHousehold(testUser)
+      } = helpers.makeMaliciousHousehold(testUser);
 
       beforeEach('insert malicious household', () => {
         return helpers.seedMaliciousHousehold(
           db,
           testUser,
           maliciousHousehold,
-        )
-      })
+        );
+      });
 
       it('removes XSS attack content', () => {
         return supertest(app)
@@ -163,11 +164,11 @@ describe('Households Endpoints', function () {
           .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200)
           .expect(res => {
-            expect(res.body[0].name).to.eql(expectedHousehold.name)
-          })
-      })
-    })
-  })
+            expect(res.body[0].name).to.eql(expectedHousehold.name);
+          });
+      });
+    });
+  });
 
       //Alex: I am removing this test because this endpoint doesn't seem to be utilized by this app.
 

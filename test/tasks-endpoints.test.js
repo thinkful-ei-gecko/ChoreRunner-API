@@ -6,6 +6,7 @@ const helpers = require('./test-helpers')
  - GET tasks
     - When tasks aren't in db
     - When tasks are in db
+    - Malicious XSS
  - POST tasks
     - Valid post data
     - Invalid post data

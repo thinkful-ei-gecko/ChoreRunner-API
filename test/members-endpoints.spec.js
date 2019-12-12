@@ -6,6 +6,7 @@ const helpers = require('./test-helpers');
  - GET members
     - When members aren't in db
     - When member are in db
+    - XSS attack
  - POST members
     - Valid post data
     - Invalid post data
@@ -50,10 +51,11 @@ describe.only(`Members Endpoints`, () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  describe.only(`GET api/households/:householdId/members`, () => {
-    context(`Households do not have members`, () => {
+  describe(`GET api/households/:householdId/members`, () => {
 
-      before('insert households', () => {
+    context(`Households do not have members`, () => {
+    
+      before('insert households but not members', () => {
         helpers.seedHouseholds(db, testUsers, testHouseholds);
       });
 
@@ -65,8 +67,8 @@ describe.only(`Members Endpoints`, () => {
       });
     });
 
-    context.only(`Households have some members`, () => {
-      before('insert households', () => {
+    context(`Households have some members`, () => {
+      before('insert members', () => {
         helpers.seedMembers(db, testUsers, testHouseholds, testMembers);
       });
 
