@@ -52,7 +52,7 @@ householdsRouter
     return (
       HouseholdsService.getAllHouseholds(req.app.get('db'), user_id)
         .then(households => {
-          return res.json(households);
+          return res.json(households.map(HouseholdsService.serializeHousehold));
         })
         // .then(households => {
         //   return res.json({
@@ -416,6 +416,7 @@ householdsRouter
     }
   });
 
+//Added serialize for xss test passing. Changed 'households' to 'household' so it's more descriptive.
 householdsRouter
   .route('/:householdId')
   .all(requireAuth)
@@ -423,14 +424,12 @@ householdsRouter
   .get((req, res, next) => {
     const { householdId } = req.params;
     return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
-      .then(households => {
-        return res.json(households);
+      .then(household => {
+        console.log(HouseholdsService.serializeHousehold(household));
+        return res.json(HouseholdsService.serializeHousehold(household));
       })
       .catch(next);
   })
-  // .get((req, res, next) => {
-  //   res.json(HouseholdsService.serializeHousehold(res.household))
-  // })
   .delete(jsonBodyParser, (req, res, next) => {
     console.log('in delete');
     const { householdId } = req.params;
