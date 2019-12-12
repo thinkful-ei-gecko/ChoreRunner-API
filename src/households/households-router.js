@@ -6,11 +6,11 @@ const { requireMemberAuth } = require('../middleware/member-jwt');
 const MembersService = require('../members/members-service')
 const xss = require('xss');
 
-// const shortid = require('shortid');
 
 const householdsRouter = express.Router();
 const jsonBodyParser = express.json();
 
+//Post creates a new household. 
 householdsRouter
   .route('/')
   .all(requireAuth)
@@ -46,39 +46,21 @@ householdsRouter
       next(error);
     }
   })
+
+  //Retrieves a user's household list 
   .get((req, res, next) => {
     const user_id = req.user.id;
 
     return (
       HouseholdsService.getAllHouseholds(req.app.get('db'), user_id)
         .then(households => {
-          return res.json(households);
+          return res.json(households.map(HouseholdsService.serializeHousehold));
         })
-        // .then(households => {
-        //   return res.json({
-        //     id: households.id,
-        //     name: xss(households.name),
-        //     user_id: households.user_id
-        //   })
-        // })
         .catch(next)
     );
   });
 
-// householdsRouter
-//   .route('/:householdId')
-//   .all(requireAuth)
-//   .delete(jsonBodyParser, (req, res, next) => {
-//     console.log('in delete');
-//     const { householdId } = req.params;
-
-//     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
-//       .then(() => {
-//         res.status(204).end();
-//       })
-//       .catch(next);
-//   });
-
+//GET: Fetches all members of a household. 
 householdsRouter
   .route('/members')
   .all(requireAuth)
@@ -108,6 +90,7 @@ householdsRouter
       .catch(next);
   });
 
+  //POST: Creates a new task for a household .
 householdsRouter
   .route('/:householdId/tasks')
   .all(requireAuth)
@@ -142,6 +125,7 @@ householdsRouter
       .catch(next);
   })
 
+  //Gets all the tasks for a household, grouped by member. 
   .get((req, res, next) => {
     const { householdId } = req.params;
 
@@ -170,6 +154,8 @@ householdsRouter
       })
       .catch(next);
   })
+
+  //PATCH: Updates points and title for each task. 
   .patch(jsonBodyParser, (req, res, next) => {
     console.log(req.body);
     if (req.body.method === 'points') {
@@ -197,6 +183,8 @@ householdsRouter
     }
   });
 
+
+//GET: fetches all completed tasks. 
 householdsRouter
   .route('/:householdId/tasks/status')
   .all(requireAuth)
@@ -216,32 +204,8 @@ householdsRouter
     }
   });
 
-// householdsRouter
-//   .route('/:householdId/tasks/status/:taskId')
-//   .all(requireAuth)
-//   .patch(jsonBodyParser, (req, res, next) => {
-//     const { taskId } = req.params;
 
-//     //This handles returned tasks for diaspproval. DONT TOUCH.
-//     const { newStatus, points, memberId } = req.body;
-//     if (newStatus === 'assigned') {
-//       HouseholdsService.parentReassignTaskStatus(req.app.get('db'), taskId, newStatus)
-//       .then(task => {
-//         return res.json(task);
-//       })
-//       .catch(next);
-//     }
-
-//     //Handles Approval, dont touch. Need the delete.
-//     if (newStatus === 'approved') {
-//       HouseholdsService.parentApproveTaskStatus(req.app.get('db'), taskId, points, memberId)
-//       .then(task => {
-//         return res.json(task);
-//       })
-//       .catch(next);
-//     }
-//   })
-
+//THIS JUST DELETES A TASK FROM TEH PARENT'S ACCOUNT. DOES NOT UPDATE POINTS.
 householdsRouter
   .route('/:householdId/tasks/:taskId')
   .all(requireAuth)
@@ -256,6 +220,8 @@ householdsRouter
 
 // NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS.
 // MIGHT WANT TO FIX THIS BEFORE DEPLOY
+
+//GET: FETCHES A MEMBER'S TASKS FOR THE DASH BOARD  
 householdsRouter
   .route('/householdId/members/memberId/tasks')
   .all(requireMemberAuth)
@@ -288,6 +254,7 @@ householdsRouter
       .catch(next);
   });
 
+  //GET: RETRIEVES ALL MEMBERS OF A HOUSEHOLD 
 householdsRouter
   .route('/:householdId/members')
   .all(requireAuth)
@@ -300,6 +267,8 @@ householdsRouter
       })
       .catch(next);
   })
+
+  //ADDS A MEMBER TO A HOUSEHOLD
   .post(jsonBodyParser, async (req, res, next) => {
     const { password, username, name } = req.body;
     const user_id = req.user.id;
@@ -364,6 +333,7 @@ householdsRouter
       .catch(next);
   });
 
+  //EDITNG MEMBERS
 householdsRouter
   .route('/:householdId/members/:memberId')
   .all(requireAuth)
@@ -416,21 +386,12 @@ householdsRouter
     }
   });
 
-householdsRouter
+
+//FOR DELETING AND UPDATING A SINGLE HOUSEHOLD. 
+  householdsRouter
   .route('/:householdId')
   .all(requireAuth)
   .all(checkHouseholdExists)
-  .get((req, res, next) => {
-    const { householdId } = req.params;
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
-      .then(households => {
-        return res.json(households);
-      })
-      .catch(next);
-  })
-  // .get((req, res, next) => {
-  //   res.json(HouseholdsService.serializeHousehold(res.household))
-  // })
   .delete(jsonBodyParser, (req, res, next) => {
     console.log('in delete');
     const { householdId } = req.params;
@@ -462,8 +423,8 @@ householdsRouter
       .catch(next);
   });
 
+  //GET: GET SCORES FOR HOUSEHOLD => LEADERBOARD
 householdsRouter
-  //houshold added due to odd conflict with route ':/householdId'
   .route('/household/scores')
   .get(requireMemberAuth, (req, res, next) => {
     HouseholdsService.getHouseholdScores(
@@ -476,7 +437,8 @@ householdsRouter
       })
       .catch(next);
   })
-  //adding a reset button route. Chose to take the household_id from the req body.
+
+  //RESET BUTTON ROUTE. RESET ALL THE SCORES AND LEVELS FOR EVERYONE IN A HOUSE. 
   .patch(requireAuth, jsonBodyParser, async (req, res, next) => {
     console.log(
       'WE ARE IN THE ROUTE AND THIS IS THE ID',
@@ -533,6 +495,8 @@ householdsRouter
       next(error);
     }
   })
+
+  //THIS IS TECHNICALLY A PARENT APPROVAL ACTION. 
   .patch(jsonBodyParser, async (req, res, next) => {
     const { points, memberId, newStatus } = req.body;
     const { taskId } = req.params;
