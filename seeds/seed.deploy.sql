@@ -22,7 +22,7 @@ VALUES
 INSERT INTO "households"("id", "name", "user_id")
 VALUES
   (1, 'Simpson', 1),
-  (2, 'Hill', 1),
+  (2, 'Hill', 1)
 
 --For the Simpson family, approve Lisa's tasks and reassign Bart's tasks.
 INSERT INTO "members"("id", "name", "username", "password", "user_id", "household_id", "total_score")
@@ -67,4 +67,4 @@ SELECT setval('levels_id_seq', (SELECT MAX(id) from "levels"));
 
 COMMIT;
 
--- run script: psql -U dunder_mifflin -d chorerunner -f ./seeds/seed.tables.sql
+-- run script: heroku pg:psql -U dunder_mifflin -d chorerunner -f ./seeds/seed.tables.sql
