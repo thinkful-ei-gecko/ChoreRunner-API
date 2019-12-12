@@ -14,7 +14,7 @@ const helpers = require('./test-helpers');
  - DELETE household --- UNNEEDED
 */
 
-describe('Households Endpoints', function () {
+describe.only('Households Endpoints', function () {
   let db;
 
   const {
@@ -170,75 +170,5 @@ describe('Households Endpoints', function () {
     });
   });
 
-      //Alex: I am removing this test because this endpoint doesn't seem to be utilized by this app.
-
-
-  // describe(`GET /api/households/:id`, () => {
-  //   context(`Given no household`, () => {
-  //     beforeEach(() =>
-  //       helpers.seedUsers(db, testUsers)
-  //     )
-  //     it(`responds with 404`, () => {
-  //       const householdId = 123456
-  //       return supertest(app)
-  //         .get(`/api/households/${householdId}`)
-  //         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-  //         .expect(404, { error: `Household doesn't exist` })
-  //     })
-  //   })
-
-    //seed testTasks later
-    // context('Given there are households in the database', () => {
-    //   beforeEach('insert household', () =>
-    //     helpers.seedChoresTables(
-    //       db,
-    //       testUsers,
-    //       testHouseholds,
-    //     )
-    //   )
-    //seed testTasks later
-    // it('responds with 200 and the specified household', () => {
-    //   const householdId = 1
-    //   const expectedHousehold = helpers.makeExpectedHousehold(
-    //     testUsers,
-    //     testHouseholds[householdId - 1],
-    //   )
-
-    //   return supertest(app)
-    //     .get(`/api/households/${householdId}`)
-    //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-    //     .expect(200, expectedHousehold)
-    // })
-    // })
-
-
-    // context(`Given an XSS attack household`, () => {
-    //   const {
-    //     maliciousHousehold,
-    //     expectedHousehold,
-    //   } = helpers.makeMaliciousHousehold(testUser);
-
-    //   beforeEach('insert malicious household', () => {
-    //     console.log(testUser);
-    //     return helpers.seedMaliciousHousehold(
-    //       db,
-    //       testUsers[0],
-    //       maliciousHousehold,
-    //     )
-    //   })
-
-      
-      // it.only('removes XSS attack content', () => {
-      //   console.log('The id: ', maliciousHousehold.id);
-      //   return supertest(app)
-      //     .get(`/api/households/${maliciousHousehold.id}`)
-      //     .set('Authorization', helpers.makeAuthHeader(testUser))
-      //     .expect(200)
-      //     .expect(res => {
-      //       console.log('Response body: ', res.body);
-      //       expect(res.body.name).to.eql(expectedHousehold.name)
-      //     })
-      // })
-    // });
-  // })
+    
 });
