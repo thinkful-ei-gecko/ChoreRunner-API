@@ -10,10 +10,10 @@ const membersRouter = express.Router();
 const jsonBodyParser = express.json();
 
 membersRouter
-.route('/')
-.get(requireMemberAuth, async (req, res, next) => {
+  .route('/')
+  .get(requireMemberAuth, async (req, res, next) => {
     const member_id = req.member.id;
-  
+
     try {
       const userScores = await HouseholdsService.getLevels(
         req.app.get('db'),
@@ -30,4 +30,4 @@ membersRouter
     }
   })
 
-  module.exports = membersRouter
+module.exports = membersRouter
