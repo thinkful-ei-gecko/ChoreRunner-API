@@ -563,6 +563,7 @@ householdsRouter
         memberId
       );
 
+      //TODO error `Cannot destructure property `total_score` of 'undefined' or 'null'`. Property not received in api call?
       let { total_score, level_id } = userScores;
       let newScore = total_score + points;
       let newLevel = level_id;

@@ -8,35 +8,41 @@ TRUNCATE
   "households",
   "users";
 
+--Sign into Marge's account
 INSERT INTO "users"("id", "username", "password", "name")
 VALUES
   (
     1,
-    'admin',
+    'margeincharge',
     --pass
     '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS',
-    'dunder'
+    'Marge'
   );
 
 INSERT INTO "households"("id", "name", "user_id")
 VALUES
-  (1, 'household1', 1),
-  (2, 'household2', 1),
-  (3, 'household3', 1);
+  (1, 'Simpson', 1),
+  (2, 'Hill', 1),
 
---TODO hash passwords so that life is good seed works all good
+--For the Simpson family, approve Lisa's tasks and reassign Bart's tasks.
 INSERT INTO "members"("id", "name", "username", "password", "user_id", "household_id", "total_score")
 VALUES
-  (1, 'kid1', 'kid1', 'kid1', 1, 1, 0),
-  (2, 'kid2', 'kid2', 'kid2', 1, 1, 0),
-  (3, 'kid3', 'kid3', 'kid3', 1, 2, 0),
-  (4, 'kid4', 'kid4', 'kid4', 1, 2, 0);
+  --All passwords set to pass.
+  (1, 'Bart', 'bartman', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 1, 0),
+  (2, 'Lisa', 'bleedinggums', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 1, 60),
+  (3, 'Maggie', 'binky', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 2, 20),
+  (4, 'Homer', 'simpsoneh', '$2a$12$5CDxmf52iovOcAO9MVciv.6Wo7nId1olc4LOSURaKTnDvXLimQbkS', 1, 2, 10);
 
 INSERT INTO "tasks"("id", "title", "household_id", "user_id", "member_id", "points", "status")
 VALUES
-  (1, 'task1', 1, 1, 1, 5, 'assigned'),
-  (2, 'task2', 1, 1, 2, 10, 'completed'),
-  (3, 'task3', 1, 1, 2, 7, 'approved');
+---Bart tasks
+  (1, 'Walk the pig', 1, 1, 1, 5, 'completed'),
+  (2, 'Water tomacco plants', 1, 1, 1, 5, 'completed'),
+  (3, 'Bleach Homer''s pink shirts', 1, 1, 1, 10, 'completed'),
+---Lisa tasks
+  (4, 'Feed Snowball II', 1, 1, 2, 5, 'approved'),
+  (5, 'Bury Snowball I', 1, 1, 2, 5, 'approved'),
+  (5, 'Take ', 1, 1, 2, 10, 'approved');
 
 INSERT INTO "levels"("id", "badge")
 VALUES
