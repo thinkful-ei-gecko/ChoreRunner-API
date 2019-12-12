@@ -67,4 +67,4 @@ SELECT setval('levels_id_seq', (SELECT MAX(id) from "levels"));
 
 COMMIT;
 
--- run script: heroku pg:psql -U dunder_mifflin -d chorerunner -f ./seeds/seed.tables.sql
+-- run script: heroku pg:psql -U dunder_mifflin -d chorerunner -f ./seeds/seed.deploy.sql
