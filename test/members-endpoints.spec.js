@@ -24,15 +24,21 @@ const helpers = require('./test-helpers');
  - *BONUS A member gains a level when they accumulate enough points.
 */
 
-describe(`Members Endpoints`, () => {
+describe.only(`Members Endpoints`, () => {
   let db;
 
-  const { testUsers, testHouseholds, testMembers } = helpers.makeFixtures();
+  const {
+    testUsers,
+    testHouseholds,
+    testMembers,
+    testTasks
+  } = helpers.makeFixtures();
 
-  const testUser = testUsers[0],
-    testHousehold = testHouseholds[0];
+  const testUser = testUsers[0];
+  const testMember = testMembers[0];
+  const testHousehold = testHouseholds[0];
 
-  before(`make knex instance`, () => {
+  before('make knex instance', () => {
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DATABASE_URL,
@@ -40,16 +46,15 @@ describe(`Members Endpoints`, () => {
     app.set('db', db);
   });
 
+  before('cleanup', () => helpers.cleanTables(db));
+  afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  before('cleanup', () => helpers.cleanTables(db));
-
-  afterEach('cleanup', () => helpers.cleanTables(db));
-
-  describe(`GET api/households/:householdId/members`, () => {
+  describe.only(`GET api/households/:householdId/members`, () => {
     context(`Households do not have members`, () => {
-      beforeEach('insert households', () => {
-        helpers.seedChoresTables(db, testUsers, testHouseholds);
+
+      before('insert households', () => {
+        helpers.seedHouseholds(db, testUsers, testHouseholds);
       });
 
       it(`returns with a 200 status and an empty array`, () => {
@@ -60,9 +65,9 @@ describe(`Members Endpoints`, () => {
       });
     });
 
-    context(`Households have some members`, () => {
-      beforeEach('insert households', () => {
-        helpers.seedChoresTables(db, testUsers, testHouseholds, testMembers);
+    context.only(`Households have some members`, () => {
+      before('insert households', () => {
+        helpers.seedMembers(db, testUsers, testHouseholds, testMembers);
       });
 
       it(`returns with a 200 status and an array with all members of household`, () => {

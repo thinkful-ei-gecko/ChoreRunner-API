@@ -3,9 +3,6 @@ const app = require('../src/app')
 const helpers = require('./test-helpers')
 
 /* TODO:
- - GET households
-    - When households aren't in db
-    - When households are in db
  - POST households
     - Valid post data
     - Invalid post data
@@ -14,10 +11,10 @@ const helpers = require('./test-helpers')
     - Valid post update data
     - Invalid post update data
     - Malicious XSS
- - DELETE household
+ - DELETE household --- UNNEEDED
 */
 
-describe.only('Households Endpoints', function () {
+describe('Households Endpoints', function () {
   let db;
 
   const {
