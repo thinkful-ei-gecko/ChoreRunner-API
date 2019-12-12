@@ -3,7 +3,6 @@ const AuthService = require('../auth/auth-service')
 
 async function requireAuth(req, res, next) {
   const authToken = req.get('Authorization') || ''
-  console.log('This is the authtoken', authToken)
 
   let bearerToken
   if (!authToken.toLowerCase().startsWith('bearer ')) {
@@ -19,7 +18,6 @@ async function requireAuth(req, res, next) {
       req.app.get('db'),
       payload.sub,
     )
-    console.log('this is the user', user)
 
     if (!user)
       return res.status(401).json({ error: 'Case 1' })

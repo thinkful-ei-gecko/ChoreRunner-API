@@ -32,7 +32,6 @@ describe(`Members Endpoints`, () => {
   const testUser = testUsers[0],
     testHousehold = testHouseholds[0];
 
-  console.log(testUser);
   before(`make knex instance`, () => {
     db = knex({
       client: 'pg',

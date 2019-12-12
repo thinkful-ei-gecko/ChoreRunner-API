@@ -421,15 +421,15 @@ householdsRouter
   .route('/:householdId')
   .all(requireAuth)
   .all(checkHouseholdExists)
-  .get((req, res, next) => {
-    const { householdId } = req.params;
-    return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
-      .then(household => {
-        console.log(HouseholdsService.serializeHousehold(household));
-        return res.json(HouseholdsService.serializeHousehold(household));
-      })
-      .catch(next);
-  })
+  // .get((req, res, next) => {
+  //   const { householdId } = req.params;
+  //   return HouseholdsService.getAllHouseholds(req.app.get('db'), householdId)
+  //     .then(household => {
+  //       console.log(HouseholdsService.serializeHousehold(household));
+  //       return res.json(HouseholdsService.serializeHousehold(household));
+  //     })
+  //     .catch(next);
+  // })
   .delete(jsonBodyParser, (req, res, next) => {
     console.log('in delete');
     const { householdId } = req.params;

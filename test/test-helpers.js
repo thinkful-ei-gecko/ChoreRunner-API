@@ -371,9 +371,9 @@ module.exports = {
 
 
 //These null constants are for remembering/checking/using the structure of these objects.
-//For example, if you write out 'nullUser' and hover over it with ctrl,
+//For example, if you write out 'nullUser' and hover over it while holding down ctrl,
 // you can see the structure of the user object. These should be deleted when we complete
-// this.
+// this unless you find a use for them.
 
 const nullUser = {
   id: null,
