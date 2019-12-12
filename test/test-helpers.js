@@ -318,12 +318,7 @@ function makeMaliciousHousehold(user) {
 }
 
 function seedMaliciousHousehold(db, user, household) {
-  return seedUsers(db, [user])
-    .then(() =>
-      db
-        .into('households')
-        .insert([household])
-    )
+  return this.seedHouseholds(db, [user], [household]);
 }
 
 //Creates a malicious task and its expected outcome.

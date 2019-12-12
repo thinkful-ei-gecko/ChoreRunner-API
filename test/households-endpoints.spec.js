@@ -161,7 +161,7 @@ describe.only('Households Endpoints', function () {
         )
       })
 
-      it('removes XSS attack content', () => {
+      it.only('removes XSS attack content', () => {
         return supertest(app)
           .get(`/api/households`)
           .set('Authorization', helpers.makeAuthHeader(testUser))
