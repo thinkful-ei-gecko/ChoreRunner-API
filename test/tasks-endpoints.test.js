@@ -17,7 +17,7 @@ const helpers = require('./test-helpers');
 
 //Moved logic for task testing here.
 
-describe.only('POST /api/households/:householdId/tasks', () => {
+describe.only('Tasks Endpoints', () => {
   let db;
 
   const {
@@ -30,6 +30,7 @@ describe.only('POST /api/households/:householdId/tasks', () => {
   const testUser = testUsers[0];
   const testMember = testMembers[0];
   const testHousehold = testHouseholds[0];
+  const testTask = testTasks[0];
 
   before('make knex instance', () => {
     db = knex({
@@ -43,18 +44,64 @@ describe.only('POST /api/households/:householdId/tasks', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  context(`Given when one request body is missing`, () => {
+  describe('GET /api/households/:householdId/tasks', () => {
 
-    describe('POST /api/households/:householdId/tasks', () => {
+    context.only('No tasks for a member', () => {
+      beforeEach('insert members but no chores', () => {
+        return helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers
+        );
+      });
 
-      beforeEach('insert chores', () => {
+      it('responds with a 204 and an empty array', () => {
+        console.log(testHousehold);
+
+        return supertest(app)
+          .get(`/api/households/${testHousehold.id}/tasks`)
+          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
+          .expect(200, [])
+          .end();
+      });
+
+    });
+
+    context('Some tasks for a member', () => {
+      beforeEach('insert members but no chores', () => {
         return helpers.seedChoresTables(
           db,
           testUsers,
           testHouseholds,
           testMembers,
+          testTasks
         );
       });
+
+      it('responds with a 201 and an empty array', () => {
+        return supertest(app)
+          .get(`/api/households/${testHousehold.id}/tasks`)
+          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
+          .expect(201, [])
+          .end();
+      });
+    });
+
+  });
+
+  describe('POST /api/households/:householdId/tasks', () => {
+
+    beforeEach('insert members', () => {
+      return helpers.seedChoresTables(
+        db,
+        testUsers,
+        testHouseholds,
+        testMembers,
+      );
+    });
+
+    context(`Given when one request body is missing`, () => {
 
       it(`responds with 400 'Missing task name, member id or points in request body' when title missing`, () => {
         const tasksMissingTitle = {
@@ -93,15 +140,8 @@ describe.only('POST /api/households/:householdId/tasks', () => {
       });
     });
 
+
     context(`Given when we have correct values in req.body`, () => {
-      beforeEach('insert chores', () => {
-        return helpers.seedChoresTables(
-          db,
-          testUsers,
-          testHouseholds,
-          testMembers,
-        );
-      });
 
       it('responds with 201 when POSTs successfully', () => {
         const fullTaskBody = {
