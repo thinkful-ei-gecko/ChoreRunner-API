@@ -278,18 +278,25 @@ function seedChoresTables(db, users = [], households = [], members = [], tasks =
 }
 
 function cleanTables(db) {
-  console.log('starting cleanTables...')
-  return db.transaction(trx =>
-    trx.raw(
-      `TRUNCATE
-        levels,
-        tasks,
-        members,
-        households,
-        users
-        RESTART IDENTITY CASCADE
-      `
-    )
+  return db.transaction(async trx => {
+    await trx.raw(`TRUNCATE tasks RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE members RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE households RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE users RESTART IDENTITY CASCADE`)
+  });
+// function cleanTables(db) {
+//   console.log('starting cleanTables...')
+//   return db.transaction(trx =>
+//     trx.raw(
+//       `TRUNCATE
+//         levels,
+//         tasks,
+//         members,
+//         households,
+//         users
+//         RESTART IDENTITY CASCADE
+//       `
+//     )
     // .then(() =>
     //   Promise.all([
     //     trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
@@ -304,8 +311,8 @@ function cleanTables(db) {
     //     trx.raw(`SELECT setval('levels_id_seq', 0)`),
     //   ])
     // )
-  )
-    .then(() => console.log('------cleanTables complete!'));
+  // )
+  //   .then(() => console.log('------cleanTables complete!'));
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
