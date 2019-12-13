@@ -139,7 +139,7 @@ describe.skip('Users Endpoints', () => {
         });
     });
 
-    it.skip('removes XSS attack content from response', () => {
+    it('removes XSS attack content from response', () => {
       before('Insert users', () => {
         helpers.seedUsers (
           db,

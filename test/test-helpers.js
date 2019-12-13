@@ -170,8 +170,7 @@ function makeExpectedHousehold(users, household) {
 // }
 
 function makeExpectedHouseholdTask(users, householdId, tasks) {
-  const expectedTasks = tasks
-    .filter(task => task.id === householdId);
+  const expectedTasks = tasks.filter(task => task.id === householdId);
 
   return expectedTasks.map(task => {
     const userTask = users.find(user => user.id === task.user_id);
