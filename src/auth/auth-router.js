@@ -8,15 +8,15 @@ const jsonBodyParser = express.json();
 authRouter
   .route('/token')
   .post(jsonBodyParser, async (req, res, next) => {
-    const { username, password, type } = req.body
+    const { username, password, type } = req.body;
 
-    console.log('TYPE OF LOGIN',type)
-    const loginUser = { username, password }
+    console.log('TYPE OF LOGIN', type);
+    const loginUser = { username, password };
 
     for (const [key, value] of Object.entries(loginUser))
       if (value == null)
         return res.status(400).json({
-          error: `Missing '${key}' in request body`
+          error: `Missing '${key}' in request body`,
         });
 
     try {
@@ -24,7 +24,7 @@ authRouter
         req.app.get('db'),
         loginUser.username
       );
-      
+
       if (!dbUser)
         return res.status(400).json({
           error: 'Incorrect username or password',
@@ -44,12 +44,12 @@ authRouter
       const payload = {
         user_id: dbUser.id,
         name: dbUser.name,
-        type: 'user'
-      }
+        type: 'user',
+      };
       res.send({
         authToken: AuthService.createJwt(sub, payload),
-        type: 'user'
-      })
+        type: 'user',
+      });
     } catch (error) {
       next(error);
     }
