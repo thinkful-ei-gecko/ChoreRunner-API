@@ -157,27 +157,30 @@ householdsRouter
 
   //PATCH: Updates points and title for each task. 
   .patch(jsonBodyParser, (req, res, next) => {
-    console.log(req.body);
     if (req.body.method === 'points') {
+      
       HouseholdsService.updateTaskPoints(
         req.app.get('db'),
         req.body.id,
         req.body.points
       )
         .then(() => {
-          res.send('points updated');
+          res.status(200).send('points updated');
         })
         .catch(next);
     }
 
     if (req.body.method === 'title') {
+    // Added XSS to title.
+      const { title } = req.body;
+
       HouseholdsService.updateTaskTitle(
         req.app.get('db'),
         req.body.id,
-        req.body.title
+        xss(title)
       )
         .then(() => {
-          res.send('title updated');
+          res.status(200).send('title updated');
         })
         .catch(next);
     }
