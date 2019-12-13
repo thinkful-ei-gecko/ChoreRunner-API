@@ -2,31 +2,43 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-/* TODO:
- - GET members
-    - When members aren't in db
-    - When member are in db
-    - XSS attack
- - POST members
-    - Valid post data
-    - Invalid post data
-    - Malicious XSS
- - UPDATE members
-    - Valid post update data
-    - Invalid post update data
-    - Malicious XSS
- - DELETE members
-    - When member exists
-    - When member doesn't exist
+//  TODO:
+//  - GET members --Yulia
+//     - When members aren't in db
+//     - When member are in db
+//     - XSS attack
+//  - POST members --Yulia
+//     - Valid post data
+//     - Invalid post data
+//     - Malicious XSS
+//  - UPDATE members- Hubert
+//     - Valid post update data
+//     - Invalid post update data
+//     - Malicious XSS
+//  - DELETE members --Daniel
+//     - When member exists
+//     - When member doesn't exist
 
- - *BONUS A member's total score increases by a task's point value when they complete
-    a given task.
-    
- - *BONUS A member gains a level when they accumulate enough points.
-*/
+//  - *BONUS A member's total score increases by a task's point value when they complete
+//     a given task. --Daniel
 
-describe('Members Endpoints', () => {
+
+//  - *BONUS A member gains a level when they accumulate enough points. --Daniel
+
+describe(`Members Endpoints`, () => {
   let db;
+
+  const {
+    testUsers,
+    testHouseholds,
+    testMembers,
+    testTasks,
+  } = helpers.makeFixtures();
+
+  const testUser = testUsers[0];
+  const testMember = testMembers[0];
+  const testHousehold = testHouseholds[0];
+
 
   before('make knex instance', () => {
     db = knex({
@@ -35,6 +47,7 @@ describe('Members Endpoints', () => {
     });
     app.set('db', db);
   });
+
 
   after('disconnect from db', () => db.destroy());
 
@@ -67,9 +80,11 @@ describe('Members Endpoints', () => {
       });
     });
 
-    context('Households have some members', () => {
-      beforeEach('insert households and members', () => {
-        helpers.seedHouseholds(db, testUsers, testHouseholds)
+    context(`Households have some members`, () => {
+      before('insert households and members', () => {
+        helpers
+          .seedHouseholds(db, testUsers, testHouseholds)
+
           .then(() => helpers.seedMembers(db, testMembers));
       });
 
