@@ -3,16 +3,10 @@ const app = require('../src/app');
 const helpers = require('./test-helpers');
 
 /* TODO:
- - GET tasks
-    - When tasks aren't in db
-    - When tasks are in db
-    - Malicious XSS
-
- - UPDATE members
-    - Valid post update data
-    - Invalid post update data
-    - Malicious XSS
  - DELETE tasks
+
+ *GET tasks as Member?
+ *Was testing for task status being done here as well? -Alex
 */
 
 //Moved logic for task testing here.
@@ -44,10 +38,10 @@ describe.only('Tasks Endpoints', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  describe('GET /api/households/:householdId/tasks', () => {
+  describe('GET /api/households/:householdId/tasks as authorized user', () => {
 
-    context.only('No tasks for a member', () => {
-      beforeEach('insert members but no chores', () => {
+    context('No tasks for any members', () => {
+      beforeEach('insert members but no tasks', () => {
         return helpers.seedChoresTables(
           db,
           testUsers,
@@ -56,20 +50,18 @@ describe.only('Tasks Endpoints', () => {
         );
       });
 
-      it('responds with a 204 and an empty array', () => {
-        console.log(testHousehold);
+      it('responds with a 200 and an empty array', () => {
 
         return supertest(app)
           .get(`/api/households/${testHousehold.id}/tasks`)
-          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
-          .expect(200, [])
-          .end();
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200);
       });
 
     });
 
     context('Some tasks for a member', () => {
-      beforeEach('insert members but no chores', () => {
+      beforeEach('insert members and tasks', () => {
         return helpers.seedChoresTables(
           db,
           testUsers,
@@ -79,18 +71,21 @@ describe.only('Tasks Endpoints', () => {
         );
       });
 
-      it('responds with a 201 and an empty array', () => {
+      it('responds with a 204', () => {
+
         return supertest(app)
           .get(`/api/households/${testHousehold.id}/tasks`)
-          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
-          .expect(201, [])
-          .end();
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .expect(res => {
+            expect(res.body).to.be.a('object');
+          });
       });
     });
 
   });
 
-  describe('POST /api/households/:householdId/tasks', () => {
+  describe('POST /api/households/:householdId/tasks as authorized user', () => {
 
     beforeEach('insert members', () => {
       return helpers.seedChoresTables(
@@ -185,40 +180,130 @@ describe.only('Tasks Endpoints', () => {
       });
     });
   });
+
+  describe('PATCH /api/households/:householdId/tasks as authorized user', () => {
+    context('Given the task is in the database', () => {
+      beforeEach('insert tasks', () => {
+        return helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers,
+          [testTask]
+        );
+      });
+
+      context('Given the request include method:title', () => {
+        it('responds with 204 and updates task title', () => {
+          const updateTask = {
+            id: testTask.id,
+            method: 'title',
+            title: 'testing',
+            points: 90000
+          };
+
+          //Expected task maintains original points but updates title.
+          const expectedTask = {
+            id: testTask.id,
+            title: updateTask.title,
+            points: testTask.points
+          };
+
+          return supertest(app)
+            .patch(`/api/households/${testHousehold.id}/tasks`)
+            .set('Authorization', helpers.makeAuthHeader(testUser))
+            .send(updateTask)
+            .expect(200, 'title updated')
+            .then(() =>
+              supertest(app)
+                .get(`/api/households/${testHousehold.id}/tasks`)
+                .set('Authorization', helpers.makeAuthHeader(testUser))
+                .expect(res => {
+                  expect(res.body).to.be.a('object');
+                  expect(res.body[1].tasks).to.be.a('array');
+                  expect(res.body[1].tasks[expectedTask.id - 1]).to.have.keys(['id', 'points', 'status', 'title']);
+                  expect(res.body[1].tasks[expectedTask.id - 1].title).to.eql(expectedTask.title);
+                  expect(res.body[1].tasks[expectedTask.id - 1].points).to.eql(expectedTask.points);
+                })
+            );
+        });
+
+        it('can filter out an xss attack', () => {
+
+          const {
+            maliciousTask,
+            expectedTask,
+          } = helpers.makeMaliciousTask(testUser, testHousehold, testMember);
+
+          console.log(expectedTask);
+
+          const updateTask = {
+            id: testTask.id,
+            method: 'title',
+            title: maliciousTask.title
+          };
+
+          return supertest(app)
+            .patch(`/api/households/${testHousehold.id}/tasks`)
+            .set('Authorization', helpers.makeAuthHeader(testUser))
+            .send(updateTask)
+            .expect(200, 'title updated')
+            .then(() =>
+              supertest(app)
+                .get(`/api/households/${testHousehold.id}/tasks`)
+                .set('Authorization', helpers.makeAuthHeader(testUser))
+                .expect(res => {
+                  expect(res.body[1].tasks[expectedTask.id - 1].title).to.eql(expectedTask.title);
+                })
+            );
+        });
+
+      });
+
+      context('Given the request includes method:points', () => {
+        it('responds with 204 and updates task points', () => {
+
+          const newPoints = testTask.points + 5;
+
+          const updateTask = {
+            id: testTask.id,
+            method: 'points',
+            points: newPoints,
+            title: 'I am breaking your server open like a coconut'
+          };
+
+          //Expected task maintains original title but updates points.
+          const expectedTask = {
+            id: testTask.id,
+            title: testTask.title,
+            points: updateTask.points,
+          };
+
+          return supertest(app)
+            .patch(`/api/households/${testHousehold.id}/tasks`)
+            .set('Authorization', helpers.makeAuthHeader(testUser))
+            .send(updateTask)
+            .expect(200, 'points updated')
+            .then(() =>
+              supertest(app)
+                .get(`/api/households/${testHousehold.id}/tasks`)
+                .set('Authorization', helpers.makeAuthHeader(testUser))
+                .expect(res => {
+                  expect(res.body).to.be.a('object');
+                  expect(res.body[1].tasks).to.be.a('array');
+                  expect(res.body[1].tasks[expectedTask.id - 1]).to.have.keys(['id', 'points', 'status', 'title']);
+                  expect(res.body[1].tasks[expectedTask.id - 1].points).to.eql(expectedTask.points);
+                  expect(res.body[1].tasks[expectedTask.id - 1].title).to.eql(expectedTask.title);
+                })
+            );
+        });
+      });
+
+    });
+  });
+
+  describe.only('DELETE /api/households/:householdId/tasks as authorized user', () => {
+
+  });
+
 });
-
-// AssertionError: expected undefined to deeply equal(maliciousTask.title)
-// context.only(`Given an XSS attack on household task`, () => {
-
-//   const {
-//     maliciousTask,
-//     expectedTask,
-//   } = helpers.makeMaliciousTask(testUser, testHousehold, testMember);
-
-//   // delete maliciousTask.id;
-
-//   before('insert malicious household task', () => {
-//     return helpers.seedMaliciousTask(
-//       db,
-//       testUser,
-//       testHousehold,
-//       testMember,
-//       maliciousTask,
-//     );
-//   });
-
-//   //test removing id from task
-
-
-//   it('removes XSS attack from title', () => {
-//     console.log('Malicious ', maliciousTask.title)
-//     console.log('Expected ', expectedTask.title)
-//     return supertest(app)
-//       .get(`/api/households/${maliciousTask.id}/tasks`)
-//       .set('Authorization', helpers.makeAuthHeader(testUser))
-//       .expect(200)
-//       .expect(res => {
-//         expect(res.body.title).to.eql(expectedTask.title)
-//       })
-//   })
-// })

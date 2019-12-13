@@ -275,32 +275,26 @@ function seedChoresTables(db, users = [], households = [], members = [], tasks =
 }
 
 function cleanTables(db) {
-  return db.transaction(trx =>
-    trx.raw(
-      `TRUNCATE
-        levels,
-        tasks,
-        members,
-        households,
-        users
-        RESTART IDENTITY CASCADE
-      `
-    )
-    // .then(() =>
-    //   Promise.all([
-    //     trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE households_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE members_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE tasks_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE levels_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`SELECT setval('users_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('households_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('members_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('tasks_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('levels_id_seq', 0)`),
-    //   ])
-    // )
-  );
+  return db.transaction(async trx => {
+    await trx.raw(`TRUNCATE tasks RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE members RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE households RESTART IDENTITY CASCADE`)
+    await trx.raw(`TRUNCATE users RESTART IDENTITY CASCADE`)
+  });
+  // .then(() => {
+  //   return db.transaction(async trx => {
+  //     await trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`)
+  //     await trx.raw(`ALTER SEQUENCE households_id_seq minvalue 0 START WITH 1`)
+  //     await trx.raw(`ALTER SEQUENCE members_id_seq minvalue 0 START WITH 1`)
+  //     await trx.raw(`ALTER SEQUENCE tasks_id_seq minvalue 0 START WITH 1`)
+  //     await trx.raw(`ALTER SEQUENCE levels_id_seq minvalue 0 START WITH 1`)
+  //     await trx.raw(`SELECT setval('users_id_seq', 0)`)
+  //     await trx.raw(`SELECT setval('households_id_seq', 0)`)
+  //     await trx.raw(`SELECT setval('members_id_seq', 0)`)
+  //     await trx.raw(`SELECT setval('tasks_id_seq', 0)`)
+  //     await trx.raw(`SELECT setval('levels_id_seq', 0)`)
+  //   });
+  // });
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
@@ -358,7 +352,7 @@ function makeMaliciousTask(user, household, member) {
 
   return {
     maliciousTask: { ...mockTask, title: maliciousString },
-    expectedTask: { ...mockTask }
+    expectedTask: { ...mockTask, title: expectedString }
   };
 }
 
