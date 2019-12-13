@@ -2,6 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const jwt = require('jsonwebtoken')
 const helpers = require('./test-helpers')
+const config = require('../src/config')
 
 describe('Auth Endpoints', function () {
   let db
@@ -71,13 +72,17 @@ describe('Auth Endpoints', function () {
       const userValidCreds = {
         username: testUser.username,
         password: testUser.password,
+        type: 'user'
       }
+
+      console.log(userValidCreds)
+
       const expectedToken = jwt.sign(
-        { user_id: testUser.id, name: testUser.name }, //payload
-        process.env.JWT_SECRET,
+        { user_id: testUser.id, name: testUser.name, type: 'user' }, //payload
+        config.JWT_SECRET,
         {
           subject: testUser.username,
-          expiresIn: process.env.JWT_EXPIRY,
+          expiresIn: config.JWT_EXPIRY,
           algorithm: 'HS256',
         }
       )

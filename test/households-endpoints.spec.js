@@ -224,7 +224,7 @@ describe('Households Endpoints', function () {
           .send(maliciousHousehold)
           .expect(201)
           .expect(res => {
-            expect(res.body[0].name).to.eql(expectedHousehold.name);
+            expect(res.body.name).to.eql(expectedHousehold.name);
           });
       });
     });
@@ -306,12 +306,12 @@ describe('Households Endpoints', function () {
         .send(maliciousHousehold)
         .expect(201)
         .expect(res => {
-          expect(res.body[0].name).to.eql(expectedHousehold.name);
+          expect(res.body.name).to.eql(expectedHousehold.name);
         });
     });
   });
 
-  describe.only(`DELETE /api/households/:id`, () => {
+  describe(`DELETE /api/households/:id`, () => {
     before('seed users', () => helpers.seedUsers(db, testUsers))
     context('Given no households', () => {
       it('responds with 404', () => {

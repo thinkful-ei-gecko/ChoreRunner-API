@@ -11,7 +11,7 @@ const helpers = require('./test-helpers');
 
 //Moved logic for task testing here.
 
-describe.only('Tasks Endpoints', () => {
+describe('Tasks Endpoints', () => {
   let db;
 
   const {
@@ -302,7 +302,7 @@ describe.only('Tasks Endpoints', () => {
     });
   });
 
-  describe.only('DELETE /api/households/:householdId/tasks as authorized user', () => {
+  describe('DELETE /api/households/:householdId/tasks as authorized user', () => {
 
   });
 

@@ -2,7 +2,7 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-describe.skip('Users Endpoints', () => {
+describe('Users Endpoints', () => {
   let db;
 
   const {
@@ -147,14 +147,14 @@ describe.skip('Users Endpoints', () => {
         );
       });
       const maliciousUser = {
-        full_name: 'Naughty naughty very naughty <script>alert("xss");</script>',
-        user_name: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        name: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        username: 'Naughty naughty very naughty <script>alert("xss");</script>',
         password: 'Naughty1! naughty very naughty <script>alert("xss");</script>'
       };
 
       const expectedUser = {
-        full_name: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
-        user_name: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
+        name: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
+        username: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
         password: `Naughty1! naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`
       };
 
