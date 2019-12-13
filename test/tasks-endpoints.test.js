@@ -42,7 +42,7 @@ describe.only('Tasks Endpoints', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  describe.only('GET /api/households/:householdId/tasks as User', () => {
+  describe('GET /api/households/:householdId/tasks as User', () => {
 
     context('No tasks for any members', () => {
       beforeEach('insert members but no tasks', () => {
@@ -184,6 +184,8 @@ describe.only('Tasks Endpoints', () => {
       });
     });
   });
+
+  describe.only('PATCH /api/households/:householdId/tasks as User', () => {
 });
 
 // AssertionError: expected undefined to deeply equal(maliciousTask.title)
