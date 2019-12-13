@@ -170,8 +170,7 @@ function makeExpectedHousehold(users, household) {
 // }
 
 function makeExpectedHouseholdTask(users, householdId, tasks) {
-  const expectedTasks = tasks
-    .filter(task => task.id === householdId);
+  const expectedTasks = tasks.filter(task => task.id === householdId);
 
   return expectedTasks.map(task => {
     const userTask = users.find(user => user.id === task.user_id);
@@ -275,31 +274,16 @@ function seedChoresTables(db, users = [], households = [], members = [], tasks =
 }
 
 function cleanTables(db) {
-<<<<<<< HEAD
   return db.transaction(async trx => {
     await trx.raw(`TRUNCATE tasks RESTART IDENTITY CASCADE`)
     await trx.raw(`TRUNCATE members RESTART IDENTITY CASCADE`)
     await trx.raw(`TRUNCATE households RESTART IDENTITY CASCADE`)
     await trx.raw(`TRUNCATE users RESTART IDENTITY CASCADE`)
   });
-// function cleanTables(db) {
-//   console.log('starting cleanTables...')
-//   return db.transaction(trx =>
-//     trx.raw(
-//       `TRUNCATE
-//         levels,
-//         tasks,
-//         members,
-//         households,
-//         users
-//         RESTART IDENTITY CASCADE
-//       `
-//     )
-=======
+
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
-        levels,
         tasks,
         members,
         households,
@@ -307,27 +291,6 @@ function cleanTables(db) {
         RESTART IDENTITY CASCADE
       `
     )
->>>>>>> f0838a7337e44c97125640695f41bc521d819c9a
-    // .then(() =>
-    //   Promise.all([
-    //     trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE households_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE members_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE tasks_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`ALTER SEQUENCE levels_id_seq minvalue 0 START WITH 1`),
-    //     trx.raw(`SELECT setval('users_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('households_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('members_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('tasks_id_seq', 0)`),
-    //     trx.raw(`SELECT setval('levels_id_seq', 0)`),
-    //   ])
-    // )
-<<<<<<< HEAD
-  // )
-  //   .then(() => console.log('------cleanTables complete!'));
-=======
-  );
->>>>>>> f0838a7337e44c97125640695f41bc521d819c9a
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
@@ -385,7 +348,7 @@ function makeMaliciousTask(user, household, member) {
 
   return {
     maliciousTask: { ...mockTask, title: maliciousString },
-    expectedTask: { ...mockTask }
+    expectedTask: { ...mockTask, title: expectedString }
   };
 }
 
