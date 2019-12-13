@@ -200,7 +200,6 @@ const HouseholdsService = {
   },
 
   getLevels(db, member_id) {
-    console.log('getting levels', member_id);
     return db
       .select(
         'levels_members.level_id',

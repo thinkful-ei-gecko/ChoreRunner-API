@@ -235,8 +235,6 @@ describe('Tasks Endpoints', () => {
             expectedTask,
           } = helpers.makeMaliciousTask(testUser, testHousehold, testMember);
 
-          console.log(expectedTask);
-
           const updateTask = {
             id: testTask.id,
             method: 'title',

@@ -28,7 +28,6 @@ describe(`Members Endpoints`, () => {
         helpers.seedChoresTables(db, testUsers, testHouseholds, testMembers);
       });
 
-      console.log(helpers.makeAuthHeader(testUser));
 
       it(`returns with a 200 status and an array with all members of household`, () => {
         const expectedMembers = testMembers;
@@ -36,21 +35,6 @@ describe(`Members Endpoints`, () => {
           .get(`/api/households/${testHousehold.id}/members`)
           .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200, expectedMembers);
-      });
-    });
-
-    context(`Households do not have members`, () => {
-      console.log(testUser);
-
-      beforeEach('insert households but not members', () => {
-        helpers.seedChoresTables(db, testUsers, testHouseholds);
-      });
-
-      it(`returns with a 200 status and an empty array`, () => {
-        return supertest(app)
-          .get(`/api/households/${testHousehold.id}/members`)
-          .set('Authorization', helpers.makeAuthHeader(testUser))
-          .expect(200, []);
       });
     });
   });

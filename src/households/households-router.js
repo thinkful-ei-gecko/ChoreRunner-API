@@ -235,7 +235,6 @@ householdsRouter
   .route('/householdId/members/memberId/tasks')
   .all(requireMemberAuth)
   .get((req, res, next) => {
-    console.log(req.member);
     HouseholdsService.getMemberTasks(
       req.app.get('db'),
       req.member.household_id,
@@ -250,7 +249,7 @@ householdsRouter
   //This updates the task status to "completed"  when member clicks completed.
   .patch(jsonBodyParser, (req, res, next) => {
     const { taskId } = req.body;
-    console.log(taskId);
+    (taskId);
     HouseholdsService.completeTask(
       req.app.get('db'),
       req.member.id,
@@ -282,7 +281,6 @@ householdsRouter
     const { password, username, name } = req.body;
     const user_id = req.user.id;
     const { householdId } = req.params;
-    console.log(password, username, name);
 
     for (const field of ['name', 'username', 'password'])
       if (!req.body[field])
@@ -334,7 +332,6 @@ householdsRouter
   //delete members
   .delete(jsonBodyParser, (req, res, next) => {
     const { member_id } = req.body;
-    console.log(member_id);
     HouseholdsService.deleteMember(req.app.get('db'), member_id)
       .then(() => {
         res.status(204).end();
@@ -402,7 +399,6 @@ householdsRouter
   .all(requireAuth)
   .all(checkHouseholdExists)
   .delete(jsonBodyParser, (req, res, next) => {
-    console.log('in delete');
     const { householdId } = req.params;
 
     HouseholdsService.deleteHousehold(req.app.get('db'), householdId)
@@ -449,12 +445,8 @@ householdsRouter
 
   //RESET BUTTON ROUTE. RESET ALL THE SCORES AND LEVELS FOR EVERYONE IN A HOUSE. 
   .patch(requireAuth, jsonBodyParser, async (req, res, next) => {
-    console.log(
-      'WE ARE IN THE ROUTE AND THIS IS THE ID',
-      req.body.household_id
-    );
+
     let { household_id } = req.body;
-    console.log(household_id);
 
     try {
       await HouseholdsService.resetHouseholdScores(
@@ -471,7 +463,6 @@ householdsRouter
         req.app.get('db'),
         household_id
       );
-      console.log('these are the new scores', newScores);
       res.status(201).json(newScores);
     } catch (error) {
       next(error);
@@ -496,7 +487,6 @@ householdsRouter
       );
 
       //show distance to next level
-      console.log(userScores);
       userScores.nextLevel = userScores.level_id * 10 - userScores.total_score;
 
       res.status(201).send(userScores);
@@ -509,7 +499,6 @@ householdsRouter
   .patch(jsonBodyParser, async (req, res, next) => {
     const { points, memberId, newStatus } = req.body;
     const { taskId } = req.params;
-    console.log(points, memberId, newStatus, taskId);
 
     try {
       //This handles returned tasks for diaspproval and kicks it

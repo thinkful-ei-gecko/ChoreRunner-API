@@ -21,7 +21,6 @@ membersRouter
       );
 
       //show distance to next level
-      console.log(userScores)
       userScores.nextLevel = (userScores.level_id * 10) - (userScores.total_score);
 
       res.status(201).send(userScores);

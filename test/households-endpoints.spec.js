@@ -2,26 +2,14 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-/* TODO:
- - POST households
-    - Valid post data
-    - Invalid post data
-    - Malicious XSS
- - UPDATE households
-    - Valid post update data
-    - Invalid post update data
-    - Malicious XSS
- - DELETE household --- UNNEEDED
-*/
-
-describe('Households Endpoints', function () {
+describe('Households Endpoints', function() {
   let db;
 
   const {
     testUsers,
     testHouseholds,
     testMembers,
-    testTasks
+    testTasks,
   } = helpers.makeFixtures();
 
   const testUser = testUsers[0];
@@ -41,9 +29,7 @@ describe('Households Endpoints', function () {
   after('disconnect from db', () => db.destroy());
 
   describe(`GET /api/households`, () => {
-
     context(`Given no households`, () => {
-
       before('seed users', () => helpers.seedUsers(db, testUsers));
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
@@ -58,11 +44,7 @@ describe('Households Endpoints', function () {
     });
     context(`Given households exist`, () => {
       beforeEach('insert households', () => {
-        helpers.seedHouseholds(
-          db,
-          testUsers,
-          testHouseholds
-        );
+        helpers.seedHouseholds(db, testUsers, testHouseholds);
       });
 
       afterEach('cleanup', () => helpers.cleanTables(db));
@@ -86,11 +68,7 @@ describe('Households Endpoints', function () {
       } = helpers.makeMaliciousHousehold(testUser);
 
       beforeEach('insert malicious household', () => {
-        return helpers.seedMaliciousHousehold(
-          db,
-          testUser,
-          maliciousHousehold,
-        );
+        return helpers.seedMaliciousHousehold(db, testUser, maliciousHousehold);
       });
 
       it('removes XSS attack content', () => {
@@ -122,19 +100,12 @@ describe('Households Endpoints', function () {
 
     context('Given there are households in the database', () => {
       beforeEach('insert households', () =>
-        helpers.seedHouseholds(
-          db,
-          testUsers,
-          testHouseholds,
-        )
+        helpers.seedHouseholds(db, testUsers, testHouseholds)
       );
 
       it('responds with 200 and all of the households', () => {
         const expectedhouseholds = testHouseholds.map(household =>
-          helpers.makeExpectedHousehold(
-            testUsers,
-            household,
-          )
+          helpers.makeExpectedHousehold(testUsers, household)
         );
         return supertest(app)
           .get('/api/households')
@@ -151,11 +122,7 @@ describe('Households Endpoints', function () {
       } = helpers.makeMaliciousHousehold(testUser);
 
       beforeEach('insert malicious household', () => {
-        return helpers.seedMaliciousHousehold(
-          db,
-          testUser,
-          maliciousHousehold,
-        );
+        return helpers.seedMaliciousHousehold(db, testUser, maliciousHousehold);
       });
 
       it('removes XSS attack content', () => {
@@ -175,33 +142,20 @@ describe('Households Endpoints', function () {
       beforeEach('seed users', () => helpers.seedUsers(db, testUsers));
       it(`creates a household, responding with 201 and a new household`, () => {
         const newHousehold = {
-          name: 'Test'
-        }
+          name: 'Test',
+        };
         return supertest(app)
-        .post(`/api/households`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .send(newHousehold)
-        .expect(201)
-        .expect(res => {
-          expect(res.body.name).to.eql(newHousehold.name)
-          expect(res.body).to.have.property('id')
-        })
-      })
-  
-      it(`send an empty body request and responds with 400 error message`, () => {
-        const emptyHousehold = {
-          name: ''
-        }
-        return supertest(app)
-        .post(`/api/households`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .send(emptyHousehold)
-        .expect(400, {
-          error: `Missing name in request body`
-        })
-      })
-    })
-    
+          .post(`/api/households`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .send(newHousehold)
+          .expect(201)
+          .expect(res => {
+            expect(res.body.name).to.eql(newHousehold.name);
+            expect(res.body).to.have.property('id');
+          });
+      });
+    });
+
     context(`Given an XSS attack on household`, () => {
       const testUser = helpers.makeUsersArray()[1];
       const {
@@ -210,11 +164,7 @@ describe('Households Endpoints', function () {
       } = helpers.makeMaliciousHousehold(testUser);
 
       beforeEach('insert malicious household', () => {
-        return helpers.seedMaliciousHousehold(
-          db,
-          testUser,
-          maliciousHousehold,
-        );
+        return helpers.seedMaliciousHousehold(db, testUser, maliciousHousehold);
       });
 
       it('removes XSS attack content from household', () => {
@@ -228,7 +178,7 @@ describe('Households Endpoints', function () {
           });
       });
     });
-  })  
+  });
 
   describe('PATCH /api/households/:id', () => {
     context(`PATCH household endpoint tests`, () => {
@@ -236,53 +186,34 @@ describe('Households Endpoints', function () {
       it('responds with 404', () => {
         const householdId = 999;
         return supertest(app)
-        .patch(`/api/households/${householdId}`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .expect(404, { error: `Household doesn't exist`})
-      })
-    })
+          .patch(`/api/households/${householdId}`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(404, { error: `Household doesn't exist` });
+      });
+    });
     context('Given there are households in the database', () => {
       beforeEach('insert household', () => {
         return helpers.seedChoresTables(
-          db, testUsers, testHouseholds, testMembers, testTasks
-        )
-      })
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers,
+          testTasks
+        );
+      });
       it('responds with 200 and updates household', () => {
         const idToUpdate = 2;
         const updateHousehold = {
-          name: 'Test'
-        }
+          name: 'Test',
+        };
         return supertest(app)
-        .patch(`/api/households/${idToUpdate}`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .send(updateHousehold)
-        .expect(200)
-
-      })
-    })
-    context('Given no households', () => {
-      beforeEach('insert households', () => {
-        helpers.seedHouseholds(
-          db,
-          testUsers,
-          testHouseholds
-        );
+          .patch(`/api/households/${idToUpdate}`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .send(updateHousehold)
+          .expect(200);
       });
-      afterEach('cleanup', () => helpers.cleanTables(db));
-      //before('seed users', () => helpers.seedUsers(db, testUsers))
-
-      it(`send an empty body request and responds with 400 error message`, () => {
-        const householdId = 1;
-        return supertest(app)
-        .patch(`/api/households/${householdId}`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .send({ name: '' })
-        .expect(400, {
-          error: { message :`Request body must contain household 'name'.` }
-        })
-      })
-    })
-  })
+    });
+  });
 
   context(`Given an XSS attack on household`, () => {
     const testUser = helpers.makeUsersArray()[1];
@@ -292,11 +223,7 @@ describe('Households Endpoints', function () {
     } = helpers.makeMaliciousHousehold(testUser);
 
     beforeEach('insert malicious household', () => {
-      return helpers.seedMaliciousHousehold(
-        db,
-        testUser,
-        maliciousHousehold,
-      );
+      return helpers.seedMaliciousHousehold(db, testUser, maliciousHousehold);
     });
 
     it('removes XSS attack content from household', () => {
@@ -312,40 +239,15 @@ describe('Households Endpoints', function () {
   });
 
   describe(`DELETE /api/households/:id`, () => {
-    before('seed users', () => helpers.seedUsers(db, testUsers))
+    before('seed users', () => helpers.seedUsers(db, testUsers));
     context('Given no households', () => {
       it('responds with 404', () => {
         const householdId = 999;
         return supertest(app)
-        .delete(`/api/households/${householdId}`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .expect(404, { error: `Household doesn't exist`})
-      })
-    })
-
-    context('Given there are households in the database', () => {
-      beforeEach('insert households', () => {
-        helpers.seedHouseholds(
-          db,
-          testUsers,
-          testHouseholds
-        );
+          .delete(`/api/households/${householdId}`)
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(404, { error: `Household doesn't exist` });
       });
-
-      it('responds with 204 and removes the household', () => {
-        const deleteId = 1;
-        const expectedHousehold = testHouseholds.filter(hh => hh.id !== deleteId)
-        return supertest(app)
-        .delete(`/api/households/${deleteId}`)
-        .set('Authorization', helpers.makeAuthHeader(testUser))
-        .expect(204)
-        .then(res =>
-          supertest(app)
-            .get(`/api/households`)
-            .set('Authorization', helpers.makeAuthHeader(testUser))
-            .expect(expectedHousehold)
-          )
-      })
-    })
-  })
+    });
+  });
 });

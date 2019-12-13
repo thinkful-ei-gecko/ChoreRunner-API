@@ -10,7 +10,6 @@ authRouter
   .post(jsonBodyParser, async (req, res, next) => {
     const { username, password, type } = req.body;
 
-    console.log('TYPE OF LOGIN', type);
     const loginUser = { username, password };
 
     for (const [key, value] of Object.entries(loginUser))
