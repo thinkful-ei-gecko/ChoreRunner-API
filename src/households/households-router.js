@@ -334,7 +334,7 @@ householdsRouter
   //delete members
   .delete(jsonBodyParser, (req, res, next) => {
     const { member_id } = req.body;
-    console.log(member_id);
+    console.log('this is the member id', member_id);
     HouseholdsService.deleteMember(req.app.get('db'), member_id)
       .then(() => {
         res.status(204).end();
@@ -599,6 +599,28 @@ async function checkHouseholdExists(req, res, next) {
     }
 
     res.household = household;
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+async function checkMemberExists(req, res, next) {
+  try {
+    console.log('THIS IS THE REQ BODY', req.body)
+    const member = await HouseholdsService.getMemberById(
+      req.app.get('db'),
+      req.body.member_id
+    );
+
+    if (!member) {
+      return res.status(404).json({
+        error: `Member doesn't exist`,
+      });
+    }
+
+    res.member = member;
     next();
   } catch (error) {
     next(error);

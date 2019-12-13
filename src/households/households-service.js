@@ -90,6 +90,7 @@ const HouseholdsService = {
       .where('household_id', id);
   },
   getMemberById(db, id) {
+    console.log(id)
     return db
       .select('*')
       .from('members')

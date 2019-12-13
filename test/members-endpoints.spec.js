@@ -35,6 +35,7 @@ describe(`Members Endpoints`, () => {
 
   const testUser = testUsers[0];
   const testHousehold = testHouseholds[0];
+  const testTask = testTasks[0];
 
   before('make knex instance', () => {
     db = knex({
@@ -67,6 +68,13 @@ describe(`Members Endpoints`, () => {
       });
     });
 
+
+//     context(`Households have some members`, () => {
+//       beforeEach('insert households and members', () => {
+//         helpers
+//           .seedHouseholds(db, testUsers, testHouseholds)
+//           .then(() => helpers.seedMembers(db, testMembers));
+
     context(`Households do not have members`, () => {
 
       console.log(testUser);
@@ -80,6 +88,58 @@ describe(`Members Endpoints`, () => {
           .get(`/api/households/${testHousehold.id}/members`)
           .set('Authorization', helpers.makeAuthHeader(testUser))
           .expect(200, []);
+      });
+
+      it('responds with 204 and deletes the member', () => {
+        return supertest(app)
+          .delete(`/api/households/${testHousehold.id}/members`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ member_id: 1 })
+          .expect(204);
+      });
+
+      // it.only('responds with 404 if the member is not found', () => {
+      //   return supertest(app)
+      //     .delete(`/api/households/${testHousehold.id}/members`)
+      //     .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      //     .send({ member_id: 456 })
+      //     .expect(204);
+      // });
+    });
+  });
+
+  describe('patch /:householdId/tasks/status/:taskId', () => {
+    context('housholds have members and chores', () => {
+      beforeEach('insert households, members, and chores', () => {
+        helpers.seedChoresTables(
+          db,
+          testUsers,
+          testHouseholds,
+          testMembers,
+          testTasks
+        );
+      });
+
+      it.only('Increases a members score when  their task is approved', () => {
+        console.log(testTask, testTasks);
+        return supertest(app)
+          .patch(`/${testHousehold.id}/tasks/status/${testTask.id}`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ points: 3, memberId: testMember.id, newStatus: 'approved' })
+          .expect(res => {
+            expect(res.body.total_score).to.eql(testMember.total_score + 3);
+          });
+      });
+
+      it('Increases a members level if their score is high enough', () => {
+        return supertest(app)
+          .patch(`/${testHousehold.id}/tasks/status/${testTask.id}`)
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ points: 3, memberId: testMember.id, newStatus: 'approved' })
+          .expect(res => {
+            expect(res.body.total_score).to.eql(testMember.total_score + 3);
+            expect(res.body.level_id).to.eql(testMember.level_id);
+          });
       });
     });
   });

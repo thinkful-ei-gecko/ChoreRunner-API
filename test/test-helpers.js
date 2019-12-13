@@ -280,20 +280,17 @@ function cleanTables(db) {
     await trx.raw(`TRUNCATE households RESTART IDENTITY CASCADE`)
     await trx.raw(`TRUNCATE users RESTART IDENTITY CASCADE`)
   });
-  // .then(() => {
-  //   return db.transaction(async trx => {
-  //     await trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE households_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE members_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE tasks_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE levels_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`SELECT setval('users_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('households_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('members_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('tasks_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('levels_id_seq', 0)`)
-  //   });
-  // });
+
+  return db.transaction(trx =>
+    trx.raw(
+      `TRUNCATE
+        tasks,
+        members,
+        households,
+        users
+        RESTART IDENTITY CASCADE
+      `
+    )
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {

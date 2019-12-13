@@ -2,14 +2,6 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-/* TODO:
- - DELETE tasks
-
- *GET tasks as Member?
- *Was testing for task status being done here as well? -Alex
-*/
-
-//Moved logic for task testing here.
 
 describe.only('Tasks Endpoints', () => {
   let db;
@@ -38,6 +30,7 @@ describe.only('Tasks Endpoints', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
+
   describe('GET /api/households/:householdId/tasks as authorized user', () => {
 
     context('No tasks for any members', () => {
@@ -49,6 +42,9 @@ describe.only('Tasks Endpoints', () => {
           testMembers
         );
       });
+
+
+  describe('POST /api/households/:householdId/tasks', () => {
 
       it('responds with a 200 and an empty array', () => {
 
@@ -86,6 +82,7 @@ describe.only('Tasks Endpoints', () => {
   });
 
   describe('POST /api/households/:householdId/tasks as authorized user', () => {
+
 
     beforeEach('insert members', () => {
       return helpers.seedChoresTables(
@@ -180,6 +177,7 @@ describe.only('Tasks Endpoints', () => {
       });
     });
   });
+
 
   describe('PATCH /api/households/:householdId/tasks as authorized user', () => {
     context('Given the task is in the database', () => {
@@ -307,3 +305,4 @@ describe.only('Tasks Endpoints', () => {
   });
 
 });
+
