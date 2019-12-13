@@ -14,7 +14,7 @@ const helpers = require('./test-helpers');
  - DELETE household --- UNNEEDED
 */
 
-describe.only('Households Endpoints', function () {
+describe('Households Endpoints', function () {
   let db;
 
   const {
