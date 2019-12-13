@@ -65,7 +65,6 @@ const HouseholdsService = {
       .where('household_id', household_id)
       .andWhere('status', status);
   },
-
   parentReassignTaskStatus(db, taskId, newStatus) {
     return db('tasks')
       .where('id', taskId)
@@ -74,7 +73,6 @@ const HouseholdsService = {
       })
       .returning('*');
   },
-
   //Daniel: Changed to just update and delete task since we have
   //method for update points already in endpoint.
   parentApproveTaskStatus(db, taskId) {
@@ -142,23 +140,19 @@ const HouseholdsService = {
         title: newTitle,
       });
   },
-
   updateMember(db, id, updatedMember) {
     return db('members')
       .where({ id })
       .update(updatedMember)
       .returning('*');
   },
-
   //This method is for deleting a task from user's dashboard
   deleteTask(db, taskId) {
     return db('tasks')
       .where('tasks.id', taskId)
       .delete();
   },
-
   //this method updated the task status to 'completed when the child marks it as done.
-  //Might want to return something?
   completeTask(db, member_id, household_id, taskId) {
     return db('tasks')
       .where('tasks.member_id', member_id)
@@ -166,7 +160,6 @@ const HouseholdsService = {
       .andWhere('tasks.id', taskId)
       .update('status', 'completed');
   },
-
   //For patch method on router "/:id"
   serializeHousehold(household) {
     return {
@@ -175,21 +168,18 @@ const HouseholdsService = {
       user_id: household.user_id,
     };
   },
-
   updateHouseholdName(db, id, newHousehold) {
     return db
       .from('households')
       .where({ id })
       .update(newHousehold);
   },
-
   getById(db, householdId) {
     return db
       .from('households')
       .where('id', householdId)
       .first();
   },
-
   //To get scores for the leaderboard
   getHouseholdScores(db, household_id) {
     return db
@@ -198,7 +188,6 @@ const HouseholdsService = {
       .where('members.household_id', household_id)
       .orderBy('members.total_score', 'desc');
   },
-
   getLevels(db, member_id) {
     return db
       .select(
@@ -219,7 +208,6 @@ const HouseholdsService = {
       )
       .first();
   },
-
   //USE THIS TO START THE MEMBER AT LEVEL 1 WHEN CREATING MEMBER
   //MUST RUN AFTER INSERT MEMBER.
   setMemberLevel(db, member_id) {
@@ -229,26 +217,22 @@ const HouseholdsService = {
       .returning('*')
       .then(([member]) => member);
   },
-
   //test update level for user
   updateLevel(db, member_id, newLevel) {
     return db('levels_members')
       .where('levels_members.member_id', member_id)
       .update('level_id', newLevel);
   },
-
   updatePoints(db, member_id, newPoints) {
     return db('members')
       .where('members.id', member_id)
       .update('total_score', newPoints);
   },
-
   resetHouseholdScores(db, household_id) {
     return db('members')
       .where('members.household_id', household_id)
       .update('total_score', 0);
   },
-
   resetHouseholdLevels(db, household_id) {
     return db('levels_members')
       .update({ level_id: 1 })

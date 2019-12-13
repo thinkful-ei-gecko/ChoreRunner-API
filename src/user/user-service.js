@@ -42,20 +42,16 @@ const UserService = {
       username: xss(users.username),
     };
   },
-
   getUserAccount(db, id) {
     return (
       db
         .select(
           'users.name as user',
-          // 'members.name as member',
-          // 'members.id as memberId',
           'households.id as householdId',
           'households.name as housename'
         )
         .from('users')
         .join('households', 'households.user_id', '=', 'users.id')
-        // .join('members', 'members.household_id', '=', 'households.id')
         .where('users.id', id)
         .groupBy('user', 'householdId', 'housename')
     );

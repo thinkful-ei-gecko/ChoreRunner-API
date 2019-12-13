@@ -70,7 +70,6 @@ describe('Auth Endpoints', function() {
         type: 'user',
       };
 
-
       const expectedToken = jwt.sign(
         { user_id: testUser.id, name: testUser.name, type: 'user' }, //payload
         config.JWT_SECRET,

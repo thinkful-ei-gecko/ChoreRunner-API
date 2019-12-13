@@ -1,23 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
-// function makeUsersArray(num = 4) {
-//   let arr = []
-//   for (let i = 0; i <= num; i++) {
-//     arr = [
-//       ...arr,
-//       {
-//         id: i,
-//         name: `test-user-${i}`,
-//         username: `test-username-${i}`,
-//         password: 'Password123!'
-//       }
-//     ]
-//   }
-//   return arr
-// }
-
 function makeUsersArray() {
   return [
     {
@@ -165,10 +148,6 @@ function makeExpectedHousehold(users, household) {
   };
 }
 
-// funciton makeExpectedMember(users, household, member) {
-//   const user = users.find(user => )
-// }
-
 function makeExpectedHouseholdTask(users, householdId, tasks) {
   const expectedTasks = tasks.filter(task => task.id === householdId);
 
@@ -237,7 +216,6 @@ function seedTasks(db, tasks) {
     });
 }
 
-//This was having trouble seeding the tables when missing params, might work now?
 function seedChoresTables(db, users = [], households = [], members = [], tasks = []) {
 
   return db.transaction(async trx => {
@@ -280,20 +258,6 @@ function cleanTables(db) {
     await trx.raw(`TRUNCATE households RESTART IDENTITY CASCADE`)
     await trx.raw(`TRUNCATE users RESTART IDENTITY CASCADE`)
   });
-  // .then(() => {
-  //   return db.transaction(async trx => {
-  //     await trx.raw(`ALTER SEQUENCE users_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE households_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE members_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE tasks_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`ALTER SEQUENCE levels_id_seq minvalue 0 START WITH 1`)
-  //     await trx.raw(`SELECT setval('users_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('households_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('members_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('tasks_id_seq', 0)`)
-  //     await trx.raw(`SELECT setval('levels_id_seq', 0)`)
-  //   });
-  // });
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
@@ -303,7 +267,6 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   });
   return `Bearer ${token}`;
 }
-
 
 function makeFixtures() {
   const testUsers = makeUsersArray();
@@ -387,39 +350,3 @@ module.exports = {
   makeExpectedHouseholdTask,
   makeAuthHeader
 };
-
-
-//These null constants are for remembering/checking/using the structure of these objects.
-//For example, if you write out 'nullUser' and hover over it while holding down ctrl,
-// you can see the structure of the user object. These should be deleted when we complete
-// this unless you find a use for them.
-
-const nullUser = {
-  id: null,
-  name: null,
-  username: null,
-  password: null
-},
-  nullHousehold = {
-    id: null,
-    name: null,
-    user_id: null
-  },
-  nullMember = {
-    id: null,
-    name: null,
-    username: null,
-    password: null,
-    user_id: null,
-    household_id: null,
-    total_score: null
-  },
-  nullTask = {
-    id: null,
-    title: null,
-    household_id: null,
-    user_id: null,
-    member_id: null,
-    points: null,
-    status: 'assigned'
-  };

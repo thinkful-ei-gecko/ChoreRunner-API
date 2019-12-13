@@ -2,15 +2,6 @@ const knex = require('knex');
 const app = require('../src/app');
 const helpers = require('./test-helpers');
 
-/* TODO:
- - DELETE tasks
-
- *GET tasks as Member?
- *Was testing for task status being done here as well? -Alex
-*/
-
-//Moved logic for task testing here.
-
 describe('Tasks Endpoints', () => {
   let db;
 
@@ -270,7 +261,6 @@ describe('Tasks Endpoints', () => {
             title: 'I am breaking your server open like a coconut'
           };
 
-          //Expected task maintains original title but updates points.
           const expectedTask = {
             id: testTask.id,
             title: testTask.title,
@@ -296,12 +286,6 @@ describe('Tasks Endpoints', () => {
             );
         });
       });
-
     });
   });
-
-  describe('DELETE /api/households/:householdId/tasks as authorized user', () => {
-
-  });
-
 });

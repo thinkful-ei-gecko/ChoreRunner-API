@@ -1,4 +1,3 @@
-DROP TYPE IF EXISTS statuscode;
 CREATE TYPE statuscode as ENUM (
   'assigned',
   'completed',

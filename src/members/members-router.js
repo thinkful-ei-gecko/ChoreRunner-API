@@ -1,13 +1,9 @@
-
 const express = require('express');
-// const path = require('path');
-// const { requireAuth } = require('../middleware/jwt-auth');
 const HouseholdsService = require('../households/households-service');
 const { requireMemberAuth } = require('../middleware/member-jwt');
 const xss = require('xss');
 
 const membersRouter = express.Router();
-const jsonBodyParser = express.json();
 
 membersRouter
   .route('/')

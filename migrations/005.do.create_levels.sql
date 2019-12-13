@@ -1,6 +1,3 @@
-DROP TABLE IF EXISTS "levels";
-DROP TABLE IF EXISTS "levels_members";
-
 CREATE TABLE "levels" (
   "id" SERIAL PRIMARY KEY,
   "badge" TEXT NOT NULL

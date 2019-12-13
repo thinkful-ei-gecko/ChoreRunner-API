@@ -1,7 +1,6 @@
-const express = require('express')
-const path = require('path')
-const UserService = require('./user-service')
-const {requireAuth} = require('../middleware/jwt-auth')
+const express = require('express');
+const path = require('path');
+const UserService = require('./user-service');
 
 const userRouter = express.Router()
 const jsonBodyParser = express.json()
@@ -43,8 +42,6 @@ userRouter
         newUser
       )
 
-
-
       res
         .status(201)
         .location(path.posix.join(req.originalUrl, `/${user.id}`))
@@ -54,4 +51,4 @@ userRouter
     }
   })
 
-module.exports = userRouter
+module.exports = userRouter;

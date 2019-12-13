@@ -24,8 +24,6 @@ householdsRouter
       });
 
     try {
-      //use short id to generate house code
-      // let house_code = `${name}` + shortid.generate();
       const newHousehold = {
         name: xss(name),
         user_id,
@@ -40,7 +38,6 @@ householdsRouter
         user_id: house.user_id,
         id: house.id,
         name: xss(house.name),
-        // code: house.house_code,
       });
     } catch (error) {
       next(error);
@@ -171,7 +168,6 @@ householdsRouter
     }
 
     if (req.body.method === 'title') {
-    // Added XSS to title.
       const { title } = req.body;
 
       HouseholdsService.updateTaskTitle(
@@ -191,7 +187,6 @@ householdsRouter
       })
     }
   });
-
 
 //GET: fetches all completed tasks. 
 householdsRouter
@@ -213,7 +208,6 @@ householdsRouter
     }
   });
 
-
 //THIS JUST DELETES A TASK FROM TEH PARENT'S ACCOUNT. DOES NOT UPDATE POINTS.
 householdsRouter
   .route('/:householdId/tasks/:taskId')
@@ -226,9 +220,6 @@ householdsRouter
       })
       .catch(next);
   });
-
-// NOTE: THIS ENDPOINT USES THE MEMBER'S AUTHTOKEN, NOT PARAMS.
-// MIGHT WANT TO FIX THIS BEFORE DEPLOY
 
 //GET: FETCHES A MEMBER'S TASKS FOR THE DASH BOARD  
 householdsRouter
@@ -339,11 +330,9 @@ householdsRouter
       .catch(next);
   });
 
-  //EDITNG MEMBERS
 householdsRouter
   .route('/:householdId/members/:memberId')
   .all(requireAuth)
-  // Currently, not allowing users to reassign households to members.
   .patch(jsonBodyParser, async (req, res, next) => {
     const { name, username, password } = req.body;
     const { memberId } = req.params;
@@ -428,7 +417,7 @@ householdsRouter
       .catch(next);
   });
 
-  //GET: GET SCORES FOR HOUSEHOLD => LEADERBOARD
+//GET: GET SCORES FOR HOUSEHOLD => LEADERBOARD
 householdsRouter
   .route('/household/scores')
   .get(requireMemberAuth, (req, res, next) => {
@@ -473,8 +462,6 @@ householdsRouter
 //Post: Adds points and  updates levels/badges
 householdsRouter
   .route('/:householdId/tasks/status/:taskId')
-  // .all(requireMemberAuth)
-
   //The get requires member auth because it uses the token from the logged in member.
   //This get grabs information for the currently logged in  member.
   .get(requireMemberAuth, async (req, res, next) => {
@@ -511,7 +498,7 @@ householdsRouter
         );
         return res.status(201).json(task);
       }
-      //Handles Approval, dont touch. Need the delete.
+      //Handles Approval
       if (newStatus === 'approved') {
         await HouseholdsService.parentApproveTaskStatus(
           req.app.get('db'),
@@ -564,15 +551,6 @@ householdsRouter
       next(error);
     }
   });
-
-//example response
-
-//   {
-//     "level_id": 1,
-//     "name": "Kelley",
-//     "total_score": 25,
-//     "badge": "badge1"
-// }
 
 async function checkHouseholdExists(req, res, next) {
   try {

@@ -13,8 +13,6 @@ describe('Households Endpoints', function() {
   } = helpers.makeFixtures();
 
   const testUser = testUsers[0];
-  const testMember = testMembers[0];
-  const testHousehold = testHouseholds[0];
 
   before('make knex instance', () => {
     db = knex({

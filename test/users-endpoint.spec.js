@@ -47,7 +47,7 @@ describe('Users Endpoints', () => {
       return supertest(app)
         .post('/api/users')
         .send(userMissingUser)
-        .expect(400, {error: `Missing 'username' in request body`});
+        .expect(400, {error: 'Missing \'username\' in request body'});
     });
 
     it('responds with 400 missing name if not supplied', () => {
@@ -58,7 +58,7 @@ describe('Users Endpoints', () => {
       return supertest(app)
         .post('/api/users')
         .send(userMissingFullName)
-        .expect(400, {error: `Missing 'name' in request body`});
+        .expect(400, {error: 'Missing \'name\' in request body'});
     });
 
     it('responds with 400 missing password if not supplied', () => {
@@ -69,7 +69,7 @@ describe('Users Endpoints', () => {
       return supertest(app)
         .post('/api/users')
         .send(userMissingPassword)
-        .expect(400, {error: `Missing 'password' in request body`});
+        .expect(400, {error: 'Missing \'password\' in request body'});
     });
 
     it('responds with 400 when password is less than 8 characters', () => {
@@ -153,9 +153,9 @@ describe('Users Endpoints', () => {
       };
 
       const expectedUser = {
-        name: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
-        username: `Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`,
-        password: `Naughty1! naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;`
+        name: 'Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
+        username: 'Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
+        password: 'Naughty1! naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;'
       };
 
       return supertest(app)
@@ -167,6 +167,6 @@ describe('Users Endpoints', () => {
           expect(res.body.user_name).to.eql(expectedUser.user_name);
           expect(res.body).to.have.property('id');
         });
-    })
-  })
-})
+    });
+  });
+});

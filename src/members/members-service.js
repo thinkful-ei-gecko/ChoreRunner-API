@@ -1,5 +1,3 @@
-//TODO kill me
-
 const MembersService = {
 
   validatePassword(password) {
@@ -13,8 +11,7 @@ const MembersService = {
       return 'Password must not start or end with empty spaces';
     }
     return null;
-  },
-  
+  }, 
 };
 
 module.exports = MembersService;
