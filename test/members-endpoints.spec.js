@@ -24,7 +24,7 @@ const helpers = require('./test-helpers');
 
 //  - *BONUS A member gains a level when they accumulate enough points. --Daniel
 
-describe.only(`Members Endpoints`, () => {
+describe(`Members Endpoints`, () => {
   let db;
 
   const {

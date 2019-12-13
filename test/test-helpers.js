@@ -47,27 +47,27 @@ function makeUsersArray() {
   ];
 }
 
-function makeHouseholdsArray(users) {
+function makeHouseholdsArray() {
   return [
     {
       id: 1,
       name: 'household1',
-      user_id: users[0].id
+      user_id: 1
     },
     {
       id: 2,
       name: 'household2',
-      user_id: users[0].id
+      user_id: 1
     },
     {
       id: 3,
       name: 'household3',
-      user_id: users[0].id
+      user_id: 1
     },
     {
       id: 4,
       name: 'household4',
-      user_id: users[0].id
+      user_id: 1
     }
   ];
 }
@@ -208,13 +208,11 @@ function seedUsers(db, users) {
 function seedHouseholds(db, users, households) {
   return db
     .transaction(async trx => {
-      console.log('seeding households');
       await seedUsers(trx, users);
       await trx.into('households').insert(households);
       await trx.raw(`SELECT setval('households_id_seq', ?)`,
         [households[households.length - 1].id],
       )
-        .then(() => console.log('finished seeding households'));
     });
 }
 
@@ -222,13 +220,11 @@ function seedHouseholds(db, users, households) {
 function seedMembers(db, members) {
   return db
     .transaction(async trx => {
-      console.log('seeding members');
       await trx.into('members').insert(members);
       await trx.raw(
         `SELECT setval('members_id_seq', ?)`,
         [members[members.length - 1].id]
       );
-      console.log('done seeding members');
     });
 }
 
@@ -244,6 +240,7 @@ function seedTasks(db, tasks) {
 
 //This was having trouble seeding the tables when missing params, might work now?
 function seedChoresTables(db, users = [], households = [], members = [], tasks = []) {
+
   return db.transaction(async trx => {
 
     await trx.into('users').insert(users);
@@ -278,7 +275,6 @@ function seedChoresTables(db, users = [], households = [], members = [], tasks =
 }
 
 function cleanTables(db) {
-  console.log('starting cleanTables...')
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
@@ -304,8 +300,7 @@ function cleanTables(db) {
     //     trx.raw(`SELECT setval('levels_id_seq', 0)`),
     //   ])
     // )
-  )
-    .then(() => console.log('------cleanTables complete!'));
+  );
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
@@ -319,9 +314,9 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
 
 function makeFixtures() {
   const testUsers = makeUsersArray();
-  const testHouseholds = makeHouseholdsArray(testUsers);
-  const testMembers = makeMembersArray(testUsers, testHouseholds);
-  const testTasks = makeTasksArray(testMembers);
+  const testHouseholds = makeHouseholdsArray();
+  const testMembers = makeMembersArray();
+  const testTasks = makeTasksArray();
   return { testUsers, testHouseholds, testMembers, testTasks };
 }
 
@@ -367,8 +362,14 @@ function makeMaliciousTask(user, household, member) {
   };
 }
 
-function seedMaliciousTask(db, user, household, task) {
-  return seedChoresTables(db, [user], [household], [task]);
+function seedMaliciousTask(db, user, household, member, task) {
+  seedHouseholds(db, [user], [household])
+    .then(() => {
+      return seedMembers(db, [member])
+    })
+    .then(() => {
+      return seedTasks(db, [task])
+    })
 }
 
 module.exports = {
