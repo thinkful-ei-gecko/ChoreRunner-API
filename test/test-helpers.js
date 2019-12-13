@@ -282,7 +282,6 @@ function cleanTables(db) {
   return db.transaction(trx =>
     trx.raw(
       `TRUNCATE
-        levels,
         tasks,
         members,
         households,
@@ -316,7 +315,6 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   return `Bearer ${token}`;
 }
 
-
 function makeFixtures() {
   const testUsers = makeUsersArray();
   const testHouseholds = makeHouseholdsArray(testUsers);
@@ -344,6 +342,29 @@ function makeMaliciousHousehold(user) {
 
 function seedMaliciousHousehold(db, user, household) {
   return this.seedHouseholds(db, [user], [household]);
+}
+
+function makeMaliciousMember() {
+  const maliciousMember = {
+    id: 1,
+    name: 'A Foul Name <script>alert("xss");</script>',
+    username: 'A Foul Username <script>alert("xss");</script>',
+    password: 'password',
+    user_id: 1,
+    household_id: 1,
+  }
+  const expectedMember = {
+    id: 1,
+    name: 'A Foul Name &lt;script&gt;alert("xss");&lt;/script&gt;',
+    username: 'A Foul Username &lt;script&gt;alert("xss");&lt;/script&gt;',
+    password: 'password',
+    user_id: 1,
+    household_id: 1,
+  }
+  return {
+    maliciousMember,
+    expectedMember
+  }
 }
 
 //Creates a malicious task and its expected outcome.
@@ -391,7 +412,9 @@ module.exports = {
 
   makeExpectedHousehold,
   makeExpectedHouseholdTask,
-  makeAuthHeader
+  makeAuthHeader,
+
+  makeMaliciousMember
 };
 
 

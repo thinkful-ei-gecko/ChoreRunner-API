@@ -262,8 +262,12 @@ householdsRouter
     const { householdId } = req.params;
 
     return HouseholdsService.getAllMembers(req.app.get('db'), householdId)
-      .then(tasks => {
-        return res.json(tasks);
+      .then(members => {
+        members.forEach(member => {
+          member.name = xss(member.name)
+          member.username = xss(member.username)
+        })
+        return res.json(members);
       })
       .catch(next);
   })
