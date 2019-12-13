@@ -3,12 +3,8 @@ const app = require('../src/app');
 const helpers = require('./test-helpers');
 
 /* TODO:
- - GET tasks
-    - When tasks aren't in db
-    - When tasks are in db
-    - Malicious XSS
-
- - UPDATE members
+ - GET tasks as Member?
+ - UPDATE tasks
     - Valid post update data
     - Invalid post update data
     - Malicious XSS
@@ -32,6 +28,8 @@ describe.only('Tasks Endpoints', () => {
   const testHousehold = testHouseholds[0];
   const testTask = testTasks[0];
 
+  console.log(testMember);
+
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
@@ -44,10 +42,10 @@ describe.only('Tasks Endpoints', () => {
   afterEach('cleanup', () => helpers.cleanTables(db));
   after('disconnect from db', () => db.destroy());
 
-  describe('GET /api/households/:householdId/tasks', () => {
+  describe.only('GET /api/households/:householdId/tasks as User', () => {
 
-    context.only('No tasks for a member', () => {
-      beforeEach('insert members but no chores', () => {
+    context('No tasks for any members', () => {
+      beforeEach('insert members but no tasks', () => {
         return helpers.seedChoresTables(
           db,
           testUsers,
@@ -56,20 +54,18 @@ describe.only('Tasks Endpoints', () => {
         );
       });
 
-      it('responds with a 204 and an empty array', () => {
-        console.log(testHousehold);
+      it('responds with a 200 and an empty array', () => {
 
         return supertest(app)
           .get(`/api/households/${testHousehold.id}/tasks`)
-          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
-          .expect(200, [])
-          .end();
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200);
       });
 
     });
 
     context('Some tasks for a member', () => {
-      beforeEach('insert members but no chores', () => {
+      beforeEach('insert members and tasks', () => {
         return helpers.seedChoresTables(
           db,
           testUsers,
@@ -79,12 +75,15 @@ describe.only('Tasks Endpoints', () => {
         );
       });
 
-      it('responds with a 201 and an empty array', () => {
+      it('responds with a 204', () => {
+
         return supertest(app)
           .get(`/api/households/${testHousehold.id}/tasks`)
-          .set('Authorization', helpers.makeAuthHeader(testMember[0]))
-          .expect(201, [])
-          .end();
+          .set('Authorization', helpers.makeAuthHeader(testUser))
+          .expect(200)
+          .expect(res => {
+            expect(res.body).to.be.a('object');
+          });
       });
     });
 
