@@ -184,6 +184,12 @@ householdsRouter
         })
         .catch(next);
     }
+
+    if(!req.body.method) {
+      return res.status(400).json({
+        error: { message: `Request body must contain title or points.` }
+      })
+    }
   });
 
 
