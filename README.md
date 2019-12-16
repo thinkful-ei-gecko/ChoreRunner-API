@@ -4,7 +4,7 @@ Authors: Daniel Nichols, Hubert Yang, Nancy Phiukhao, Yulia Khisamutdinova, Alex
 
 This project was created using Express, Node, and PostgreSQL.
 
-Demo: [ENTER LINK HERE]
+Demo: https://enigmatic-waters-75582.herokuapp.com/
 
 ## Set up
 
@@ -245,9 +245,3 @@ Provided a household id is included in the request params, it retrieves an array
 #### POST api/households/:householdId/tasks
 
 Provided a household id is included in the request params, it creates a new task for the household, responding with a 201 success message.
-
-#### PATCH api/households/:householdId/tasks
-
-what this does
-
-#### DELETE api/households/:householdId/tasks
