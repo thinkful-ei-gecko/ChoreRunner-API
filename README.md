@@ -6,6 +6,11 @@ This project was created using Express, Node, and PostgreSQL.
 
 Demo: https://enigmatic-waters-75582.herokuapp.com/
 
+## Tech stack
+- NodeJS
+- Express
+- PostgresQL
+
 ## Set up
 
 Complete the following steps to start a new project (NEW-PROJECT-NAME):
