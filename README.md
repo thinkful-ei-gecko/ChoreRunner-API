@@ -1,6 +1,6 @@
 # ChoreRunner API 1.0
 
-Authors: Daniel Nichols, Hubert Yang, Nancy Phiukhao, Yulia Khisamutdinova, Alexander Fukui
+Authors: Daniel Nichols, Hubert Yang, Chitchanok Nancy Phiukhao, Yulia Khisamutdinova, Alexander Fukui
 
 This project was created using Express, Node, and PostgreSQL.
 
